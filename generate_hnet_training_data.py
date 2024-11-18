@@ -2,7 +2,8 @@ import numpy as np
 import random
 import pickle
 from IPython import  embed
-eps = np.finfo(np.float).eps
+import time
+eps = np.finfo(float).eps
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance
 
@@ -34,15 +35,15 @@ def load_obj(name):
 def main():
     # MAIN ALGO starts here
     pickle_filename = 'hung_data'
-    max_doas = 2    # maximum number of events/DOAs you want to the hungarian algo to associate
-
-    # TODO Currently hardcoded needs to be automated.
-    sample_range = np.array([3000, 5000, 15000])  # This has to be adjusted such that all association combinations of
-    # 0, 1, 2 .. max_doas has roughly equal distribution in the training data.
+    max_doas = 10    # maximum number of events/DOAs you want to the hungarian algo to associate
+    #base_samples = 1000
+    #increment = 2000
+    sample_range = np.full(max_doas + 1, 1000) # Number of samples to generate for each combination of ('nb_ref', 'nb_pred')
 
     # Generate training data
     data_dict = {}
     cnt = 0
+    start_time = time.time()
     # For each combination of associations ('nb_ref', 'nb_pred') = [(0, 0), (0, 1), (1, 0) ... (max_doas, max_doas)]
     #   Generate random reference ('ref_ang')and prediction ('pred_ang') DOAs at different 'resolution'.
     for resolution in [1, 2, 3, 4, 5, 10, 15, 20, 30]: # Different angular resolution
@@ -53,11 +54,19 @@ def main():
             for nb_pred in range(max_doas+1): # Predicted number of DOAs
 
                 # How many examples to generate for the given combination of ('nb_ref', 'nb_pred'), such that the overall dataset is not skewed.
+                # print(len(sample_range))  # Should be greater than the maximum index used
                 total_samples = sample_range[min(nb_ref, nb_pred)]
                 for nb_cnt in range(total_samples):
-                    # Generate random azimuth elevation vectors in Polar coordinates
-                    ref_ang = np.array((random.sample(azi_range, nb_ref), random.sample(ele_range, nb_ref))).T
-                    pred_ang = np.array((random.sample(azi_range, nb_pred), random.sample(ele_range, nb_pred))).T
+                    if cnt%100000 == 0: 
+                        elapsed_time = time.time() - start_time
+                        print(f'Number of examples generated : {cnt}, Time elapsed : {elapsed_time:.2f} seconds')
+                    try:
+                        # Generate random azimuth and elevation angles
+                        ref_ang = np.array((random.sample(azi_range, nb_ref), random.sample(ele_range, nb_ref))).T
+                        pred_ang = np.array((random.sample(azi_range, nb_pred), random.sample(ele_range, nb_pred))).T
+                    except ValueError as e:
+                        #print(f"Error with nb_ref={nb_ref}, nb_pred={nb_pred}: {e}")
+                        continue
 
                     # Initialize both reference and predicted DOAs to a fixed dimension: (max_doas, 3)
                     # We initialize half of the samples to a fixed value of 10, the remaining half are randomly
@@ -111,9 +120,13 @@ def main():
             for nb_pred in range(max_doas+1):
                 total_samples = int(0.1*sample_range[min(nb_ref, nb_pred)])
                 for nb_cnt in range(total_samples):
-                    # Generate random azimuth elevation vectors
-                    ref_ang = np.array((random.sample(azi_range, nb_ref), random.sample(ele_range, nb_ref))).T
-                    pred_ang = np.array((random.sample(azi_range, nb_pred), random.sample(ele_range, nb_pred))).T
+                    try:
+                        # Generate random azimuth and elevation angles
+                        ref_ang = np.array((random.sample(azi_range, nb_ref), random.sample(ele_range, nb_ref))).T
+                        pred_ang = np.array((random.sample(azi_range, nb_pred), random.sample(ele_range, nb_pred))).T
+                    except ValueError as e:
+                        #print(f"Error with nb_ref={nb_ref}, nb_pred={nb_pred}: {e}")
+                        continue
 
                     # initialize fixed length vector
                     if random.random()>0.5:

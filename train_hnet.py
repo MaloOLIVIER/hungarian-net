@@ -110,13 +110,14 @@ class HungarianDataset(Dataset):
 
 def main():
     batch_size = 256
-    nb_epochs = 1000
-    max_len = 2 # maximum number of events/DOAs you want to the hungarian algo to associate,
+    nb_epochs = 10
+    max_len = 10 # maximum number of events/DOAs you want to the hungarian algo to associate,
     # this is same as 'max_doas' in generate_hnet_training_data.py
 
     # Check wether to run on cpu or gpu
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
+    print('Using device:', device)
 
     # load training dataset
     train_dataset = HungarianDataset(train=True, max_len=max_len)

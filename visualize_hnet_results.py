@@ -5,7 +5,7 @@ import matplotlib.pyplot as plot
 import random
 
 use_cuda = False
-max_len = 2
+max_len = 10
 
 device = torch.device("cuda" if use_cuda else "cpu")
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
@@ -33,8 +33,3 @@ for _ in range(20):
     plot.legend()
     plot.ylim([0, 1])
     plot.show()
-
-
-
-
-
