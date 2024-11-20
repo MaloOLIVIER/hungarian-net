@@ -32,6 +32,17 @@ def load_obj(name):
         return pickle.load(f)
 
 
+def compute_class_imbalance(data_dict):
+    class_counts = {}
+    for key, value in data_dict.items():
+        nb_ref, nb_pred, dist_mat, da_mat, ref_cart, pred_cart = value
+        for row in da_mat:
+            for elem in row:
+                if elem not in class_counts:
+                    class_counts[elem] = 0
+                class_counts[elem] += 1
+    return class_counts
+
 def main():
     # MAIN ALGO starts here
     pickle_filename = 'hung_data'
@@ -78,6 +89,8 @@ def main():
                     if random.random()>0.5:
                         ref_cart, pred_cart = np.random.uniform(low=-100, high=100, size=(max_doas, 3)), np.random.uniform(low=-100, high=100, size=(max_doas, 3))
                         # we make sure that the above random number is not in the good range of distances: [-1 to 1]
+                        # Sets these values to 10, effectively removing them from the close proximity range.
+                        # It ensures that no DOAs are too close to each other.
                         ref_cart[(ref_cart<=1) & (ref_cart>=-1)], pred_cart[(pred_cart<=1) & (pred_cart>=-1)] = 10, 10
                     else:
                         ref_cart, pred_cart = 10*np.ones((max_doas, 3)), 10*np.ones((max_doas, 3))
@@ -109,6 +122,10 @@ def main():
     out_filename = 'data/{}_train'.format(pickle_filename)
     print('Saving data in: {}, #examples: {}'.format(out_filename, len(data_dict)))
     save_obj(data_dict, out_filename)
+
+    # Compute class imbalance for training data
+    train_class_imbalance = compute_class_imbalance(data_dict)
+    print('Training data class imbalance:', train_class_imbalance)
 
     # Generate testing data, same procedure as above
     data_dict = {}
@@ -163,6 +180,9 @@ def main():
     print('Saving data in: {}, #examples: {}'.format(out_filename, len(data_dict)))
     save_obj(data_dict, out_filename)
 
+    # Compute class imbalance for testing data
+    test_class_imbalance = compute_class_imbalance(data_dict)
+    print('Testing data class imbalance:', test_class_imbalance)
 
 if __name__ == "__main__":
     main()
