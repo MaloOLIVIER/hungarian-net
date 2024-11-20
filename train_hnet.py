@@ -100,13 +100,65 @@ class HungarianDataset(Dataset):
     def get_f_wts(self):
         return self.f_scr_wts
 
+    def compute_class_imbalance(self):
+        """
+        Computes the class imbalance in the dataset.
+
+        This method iterates over the data dictionary and counts the occurrences
+        of each class in the distance assignment matrix (da_mat).
+
+        Returns:
+            dict: A dictionary where keys are class labels and values are the 
+                  counts of occurrences of each class.
+        """
+        class_counts = {}
+        for key, value in self.data_dict.items():
+            nb_ref, nb_pred, dist_mat, da_mat, ref_cart, pred_cart = value
+            for row in da_mat:
+                for elem in row:
+                    if elem not in class_counts:
+                        class_counts[elem] = 0
+                    class_counts[elem] += 1
+        return class_counts
+
     def __getitem__(self, idx):
         feat = self.data_dict[idx][2]
         label = self.data_dict[idx][3]
 
         label = [label.reshape(-1), label.sum(-1), label.sum(-2)]
         return feat, label
+    
+    def compute_weighted_accuracy(self, n1star, n0star):
+        """
+        Compute the weighted accuracy of the model.
+        The weighted accuracy is calculated based on the class imbalance in the dataset.
+        The weights for each class are determined by the proportion of the opposite class.
+        Parameters:
+            n1star (int): The number of true positives.
+            n0star (int): The number of false positives.
+        Returns:
+            WA (float): The weighted accuracy of the model.
+        
+        References:
+        Title: How To Train Your Deep Multi-Object Tracker
+        Authors: Yihong Xu, Aljosa Osep, Yutong Ban, Radu Horaud, Laura Leal-Taixe, Xavier Alameda-Pineda
+        Year: 2020
 
+        URL: https://arxiv.org/abs/1906.06618
+        """
+        WA = 0
+        
+        class_counts = self.compute_class_imbalance()
+        
+        n0 = class_counts.get(0, 0) # number of 0s
+        n1 = class_counts.get(1, 0) # number of 1s
+        
+        w0 = n1/(n0+n1) # weight for class 0
+        w1 = 1 - w0 # weight for class 1
+        
+        WA = (w1*n1star+w0*n0star)/(w1*n1+w0*n0)
+        
+        return WA
 
 def main():
     batch_size = 256
@@ -127,6 +179,10 @@ def main():
 
     f_score_weights = np.tile(train_dataset.get_f_wts(), batch_size)
     print(train_dataset.get_f_wts())
+
+    # Compute class imbalance
+    class_imbalance = train_dataset.compute_class_imbalance()
+    print("Class imbalance in training labels:", class_imbalance)
 
     # load validation dataset
     test_loader = DataLoader(
@@ -186,6 +242,8 @@ def main():
         test_loss, test_l1, test_l2, test_l3 = 0, 0, 0, 0
         test_f = 0
         nb_test_batches = 0
+        true_positives, false_positives, false_negatives = 0, 0, 0
+        f1_score_unweighted = 0
         with torch.no_grad():
             for data, target in test_loader:
                 data = data.to(device).float()
@@ -209,23 +267,32 @@ def main():
                 test_f += f1_score(f_ref, f_pred, zero_division=1, average='weighted', sample_weight=f_score_weights)
                 nb_test_batches += 1
 
+                true_positives += np.sum((f_pred == 1) & (f_ref == 1))
+                false_positives += np.sum((f_pred == 1) & (f_ref == 0))
+                false_negatives += np.sum((f_pred == 0) & (f_ref == 1))
+                
+                f1_score_unweighted += 2*true_positives/(2*true_positives+false_positives+false_negatives)
+
         test_l1 /= len(test_loader.dataset)
         test_l2 /= len(test_loader.dataset)
         test_l3 /= len(test_loader.dataset)
         test_loss /= len(test_loader.dataset)
         test_f /= nb_test_batches
         test_time = time.time() - test_start
+        weighted_accuracy = train_dataset.compute_weighted_accuracy(true_positives, false_positives)
+        
+        f1_score_unweighted /= nb_test_batches
 
         # Early stopping
         if test_f > best_loss:
             best_loss = test_f
             best_epoch = epoch
             torch.save(model.state_dict(), "data/hnet_model.pt")
-        print('Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}'.format(epoch, train_time, test_time, train_loss, train_l1, train_l2, train_l3, test_loss, test_l1, test_l2, test_l3, test_f, best_epoch, best_loss))
+        print('Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}\ttrue_positives: {}\tfalse_positives: {}\tweighted_accuracy: {:.4f}'.format(
+            epoch, train_time, test_time, train_loss, train_l1, train_l2, train_l3, test_loss, test_l1, test_l2, test_l3, test_f, best_epoch, best_loss, true_positives, false_positives, weighted_accuracy))
+        print("F1 Score (unweighted): {:.4f}".format(f1_score_unweighted))
     print('Best epoch: {}\nBest loss: {}'.format(best_epoch, best_loss))
 
 
 if __name__ == "__main__":
     main()
-
-
