@@ -33,9 +33,8 @@ class AttentionLayer(nn.Module):
 
 
 class HNetGRU(nn.Module):
-    def __init__(self, max_len=4):
+    def __init__(self, max_len=4, hidden_size = 128):
         super().__init__()
-        hidden_size = 128
         self.nb_gru_layers = 1
         self.gru = nn.GRU(max_len, hidden_size, self.nb_gru_layers, batch_first=True)
         self.attn = AttentionLayer(hidden_size, hidden_size, hidden_size)
