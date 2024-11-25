@@ -1,0 +1,15 @@
+# virtualenv directory
+hun/
+
+# __pycache__ directory
+__pycache__/
+
+# pytests coverage report and cache
+.coverage
+.pytest_cache/
+htmlcov/
+
+# IDE files
+.vscode/
+.idea/
+.pycharm/
