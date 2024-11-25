@@ -64,10 +64,11 @@ class HNetGRU(nn.Module):
         # out1 - batch x (seq x feature)
 
         out2, _ = torch.max(out, dim=-1)
+        # out2 - batch x seq x 1
 
         out3, _ = torch.max(out, dim=-2)
+        # out3 - batch x 1 x feature
 
-        # out2 - batch x seq x 1
         return out1.squeeze(), out2.squeeze(), out3.squeeze()
 
 

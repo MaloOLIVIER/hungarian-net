@@ -16,40 +16,17 @@ def test_model_initialization(model, max_doas):
     assert isinstance(model, HNetGRU), "Model is not an instance of HNetGRU"
     assert model.max_len == max_doas, f"Expected max_doas {max_doas}, got {model.max_len}"
 
-# def test_forward_pass(model):
-#     input_tensor = torch.randn(1, model.max_len, 10)
-#     output = model.forward(input_tensor)
-#     assert isinstance(output, tuple), "Output should be a tuple"
-#     assert len(output) == 3, f"Expected 3 outputs, got {len(output)}"
-
-# def test_training_step(model, batch_size, sample_data):
-#     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-#     criterion = torch.nn.CrossEntropyLoss()
+def test_forward_pass(model, batch_size):
+    input_tensor = torch.randn(batch_size, model.max_len, model.max_len)
+    # query - batch x seq x feature
+    output1, output2, output3 = model.forward(input_tensor)
+    # output1 - batch x (seq x feature)
+    # output2 - batch x sequence
+    # output3 - batch x feature
     
-#     inputs = torch.tensor(sample_data['features'], dtype=torch.float32)
-#     labels = torch.tensor(sample_data['labels'], dtype=torch.long)
+    assert output1.shape == (batch_size, model.max_len * model.max_len), f"Expected output1 shape {(batch_size, model.max_len, model.max_len)}, got {output1.shape}"
+    assert output2.shape == (batch_size, model.max_len), f"Expected output2 shape {(batch_size, model.max_len)}, got {output2.shape}"
+    assert output3.shape == (batch_size, model.max_len), f"Expected output3 shape {(batch_size, model.max_len)}, got {output3.shape}"
     
-#     optimizer.zero_grad()
-#     outputs = model(inputs)
-#     loss = criterion(outputs, labels)
-#     loss.backward()
-#     optimizer.step()
-    
-#     assert loss.item() >= 0, "Loss should be non-negative"
-
-# def test_model_convergence(model, sample_data):
-#     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-#     criterion = torch.nn.CrossEntropyLoss()
-    
-#     inputs = torch.tensor(sample_data['features'], dtype=torch.float32)
-#     labels = torch.tensor(sample_data['labels'], dtype=torch.long)
-    
-#     for epoch in range(10):
-#         optimizer.zero_grad()
-#         outputs = model(inputs)
-#         loss = criterion(outputs, labels)
-#         loss.backward()
-#         optimizer.step()
-    
-#     # Assuming loss should decrease below a threshold
-#     assert loss.item() < 0.5, f"Model did not converge, final loss: {loss.item()}"
+def test_attention_layer_initialization(attentionLayer):
+    assert isinstance(attentionLayer, AttentionLayer), f"AttentionLayer is not an instance of AttentionLayer class, got {attentionLayer.__repr__()}"
