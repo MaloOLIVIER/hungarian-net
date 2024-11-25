@@ -1,7 +1,10 @@
-# tests/test_generate_hnet_training_data.py
+# tests/consistency_tests/generate_hnet_training_data/test_generate_hnet_training_data.py
+
 import pytest
 import numpy as np
 from hungarian_net.generate_hnet_training_data import sph2cart, compute_class_imbalance
+
+#TODO: maybe rewrite docstrings
 
 def test_sph2cart():
     azimuth = 0

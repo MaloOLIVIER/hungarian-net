@@ -1,9 +1,11 @@
-# tests/conftest.py
+# tests/consistency_tests/conftest.py
 
 import pytest
 import numpy as np
 import torch
 from hungarian_net.train_hnet import HNetGRU, AttentionLayer
+
+#TODO: maybe rewrite docstrings
 
 @pytest.fixture(params=[2, 4, 8])
 def max_doas(request) -> int:
