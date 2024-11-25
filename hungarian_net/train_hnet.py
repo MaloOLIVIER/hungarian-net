@@ -1,4 +1,4 @@
-from generate_hnet_training_data import load_obj
+from hungarian_net.generate_hnet_training_data import load_obj
 from IPython import embed
 import torch
 import torch.nn as nn
@@ -36,6 +36,7 @@ class HNetGRU(nn.Module):
     def __init__(self, max_len=4, hidden_size = 128):
         super().__init__()
         self.nb_gru_layers = 1
+        self.max_len = max_len
         self.gru = nn.GRU(max_len, hidden_size, self.nb_gru_layers, batch_first=True)
         self.attn = AttentionLayer(hidden_size, hidden_size, hidden_size)
         self.fc1 = nn.Linear(hidden_size, max_len)
@@ -161,9 +162,8 @@ class HungarianDataset(Dataset):
 
 def main():
     batch_size = 256
-    nb_epochs = 10
-    max_len = 10 # maximum number of events/DOAs you want to the hungarian algo to associate,
-    # this is same as 'max_doas' in generate_hnet_training_data.py
+    nb_epochs = 1000
+    max_len = 2 # maximum number of events/DOAs you want the hungarian algo to associate,
 
     # Check wether to run on cpu or gpu
     use_cuda = torch.cuda.is_available()

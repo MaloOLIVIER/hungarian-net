@@ -33,6 +33,14 @@ def load_obj(name):
 
 
 def compute_class_imbalance(data_dict):
+    """Computes the number of classes '0' and '1' in the association matrices of the training data.
+
+    Args:
+        data_dict (dict): Dictionnary also containing the Association matrix.
+
+    Returns:
+        dict: Returns a dictionary containing the number of classes '0' and '1' in the association matrices.
+    """
     class_counts = {}
     for key, value in data_dict.items():
         nb_ref, nb_pred, dist_mat, da_mat, ref_cart, pred_cart = value
@@ -46,10 +54,11 @@ def compute_class_imbalance(data_dict):
 def main():
     # MAIN ALGO starts here
     pickle_filename = 'hung_data'
-    max_doas = 10    # maximum number of events/DOAs you want to the hungarian algo to associate
-    #base_samples = 1000
-    #increment = 2000
-    sample_range = np.full(max_doas + 1, 1000) # Number of samples to generate for each combination of ('nb_ref', 'nb_pred')
+    max_doas = 2    # maximum number of events/DOAs you want to the hungarian algo to associate
+
+    # TODO Currently hardcoded needs to be automated.
+    sample_range = np.array([3000, 5000, 15000])  # This has to be adjusted such that all association combinations of
+    # 0, 1, 2 .. max_doas has roughly equal distribution in the training data.
 
     # Generate training data
     data_dict = {}
