@@ -8,6 +8,7 @@ import numpy as np
 from sklearn.metrics import f1_score
 import time
 
+
 class AttentionLayer(nn.Module):
     def __init__(self, in_channels, out_channels, key_channels):
         super(AttentionLayer, self).__init__()
@@ -24,16 +25,18 @@ class AttentionLayer(nn.Module):
         return x
 
     def __repr__(self):
-        return self._get_name() + \
-            '(in_channels={}, out_channels={}, key_channels={})'.format(
-            self.conv_Q.in_channels,
-            self.conv_V.out_channels,
-            self.conv_K.out_channels
+        return (
+            self._get_name()
+            + "(in_channels={}, out_channels={}, key_channels={})".format(
+                self.conv_Q.in_channels,
+                self.conv_V.out_channels,
+                self.conv_K.out_channels,
             )
+        )
 
 
 class HNetGRU(nn.Module):
-    def __init__(self, max_len=4, hidden_size = 128):
+    def __init__(self, max_len=4, hidden_size=128):
         super().__init__()
         self.nb_gru_layers = 1
         self.max_len = max_len
@@ -77,9 +80,9 @@ class HungarianDataset(Dataset):
 
     def __init__(self, train=True, max_len=4):
         if train:
-            self.data_dict = load_obj('data/hung_data_train')
+            self.data_dict = load_obj("data/hung_data_train")
         else:
-            self.data_dict = load_obj('data/hung_data_test')
+            self.data_dict = load_obj("data/hung_data_test")
         self.max_len = max_len
 
         self.pos_wts = np.ones(self.max_len**2)
@@ -90,7 +93,7 @@ class HungarianDataset(Dataset):
                 label = self.data_dict[i][3]
                 loc_wts += label.reshape(-1)
             self.f_scr_wts = loc_wts / len(self.data_dict)
-            self.pos_wts = (len(self.data_dict)-loc_wts) / loc_wts
+            self.pos_wts = (len(self.data_dict) - loc_wts) / loc_wts
 
     def __len__(self):
         return len(self.data_dict)
@@ -109,7 +112,7 @@ class HungarianDataset(Dataset):
         of each class in the distance assignment matrix (da_mat).
 
         Returns:
-            dict: A dictionary where keys are class labels and values are the 
+            dict: A dictionary where keys are class labels and values are the
                   counts of occurrences of each class.
         """
         class_counts = {}
@@ -128,7 +131,7 @@ class HungarianDataset(Dataset):
 
         label = [label.reshape(-1), label.sum(-1), label.sum(-2)]
         return feat, label
-    
+
     def compute_weighted_accuracy(self, n1star, n0star):
         """
         Compute the weighted accuracy of the model.
@@ -139,7 +142,7 @@ class HungarianDataset(Dataset):
             n0star (int): The number of false positives.
         Returns:
             WA (float): The weighted accuracy of the model.
-        
+
         References:
         Title: How To Train Your Deep Multi-Object Tracker
         Authors: Yihong Xu, Aljosa Osep, Yutong Ban, Radu Horaud, Laura Leal-Taixe, Xavier Alameda-Pineda
@@ -148,34 +151,37 @@ class HungarianDataset(Dataset):
         URL: https://arxiv.org/abs/1906.06618
         """
         WA = 0
-        
+
         class_counts = self.compute_class_imbalance()
-        
-        n0 = class_counts.get(0, 0) # number of 0s
-        n1 = class_counts.get(1, 0) # number of 1s
-        
-        w0 = n1/(n0+n1) # weight for class 0
-        w1 = 1 - w0 # weight for class 1
-        
-        WA = (w1*n1star+w0*n0star)/(w1*n1+w0*n0)
-        
+
+        n0 = class_counts.get(0, 0)  # number of 0s
+        n1 = class_counts.get(1, 0)  # number of 1s
+
+        w0 = n1 / (n0 + n1)  # weight for class 0
+        w1 = 1 - w0  # weight for class 1
+
+        WA = (w1 * n1star + w0 * n0star) / (w1 * n1 + w0 * n0)
+
         return WA
+
 
 def main():
     batch_size = 256
     nb_epochs = 1000
-    max_len = 2 # maximum number of events/DOAs you want the hungarian algo to associate,
+    max_len = (
+        2  # maximum number of events/DOAs you want the hungarian algo to associate,
+    )
 
     # Check wether to run on cpu or gpu
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-    print('Using device:', device)
+    print("Using device:", device)
 
     # load training dataset
     train_dataset = HungarianDataset(train=True, max_len=max_len)
     train_loader = DataLoader(
-        train_dataset,
-        batch_size=batch_size, shuffle=True, drop_last=True)
+        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True
+    )
 
     f_score_weights = np.tile(train_dataset.get_f_wts(), batch_size)
     print(train_dataset.get_f_wts())
@@ -187,16 +193,19 @@ def main():
     # load validation dataset
     test_loader = DataLoader(
         HungarianDataset(train=False, max_len=max_len),
-        batch_size=batch_size, shuffle=True, drop_last=True)
+        batch_size=batch_size,
+        shuffle=True,
+        drop_last=True,
+    )
 
     # load Hnet model and loss functions
     model = HNetGRU(max_len=max_len).to(device)
     optimizer = optim.Adam(model.parameters())
 
-    criterion1 = torch.nn.BCEWithLogitsLoss(reduction='sum')
-    criterion2 = torch.nn.BCEWithLogitsLoss(reduction='sum')
-    criterion3 = torch.nn.BCEWithLogitsLoss(reduction='sum')
-    criterion_wts = [1., 1., 1.]
+    criterion1 = torch.nn.BCEWithLogitsLoss(reduction="sum")
+    criterion2 = torch.nn.BCEWithLogitsLoss(reduction="sum")
+    criterion3 = torch.nn.BCEWithLogitsLoss(reduction="sum")
+    criterion_wts = [1.0, 1.0, 1.0]
 
     # Start training
     best_loss = -1
@@ -219,7 +228,7 @@ def main():
             l1 = criterion1(output1, target1)
             l2 = criterion2(output2, target2)
             l3 = criterion3(output3, target3)
-            loss = criterion_wts[0]*l1 + criterion_wts[1]*l2 + criterion_wts[2]*l3
+            loss = criterion_wts[0] * l1 + criterion_wts[1] * l2 + criterion_wts[2] * l3
 
             loss.backward()
             optimizer.step()
@@ -233,10 +242,9 @@ def main():
         train_l2 /= len(train_loader.dataset)
         train_l3 /= len(train_loader.dataset)
         train_loss /= len(train_loader.dataset)
-        train_time = time.time()-train_start
+        train_time = time.time() - train_start
 
-
-        #TESTING
+        # TESTING
         test_start = time.time()
         model.eval()
         test_loss, test_l1, test_l2, test_l3 = 0, 0, 0, 0
@@ -255,7 +263,11 @@ def main():
                 l1 = criterion1(output1, target1)
                 l2 = criterion2(output2, target2)
                 l3 = criterion3(output3, target3)
-                loss = criterion_wts[0]*l1 + criterion_wts[1]*l2+ criterion_wts[2]*l3
+                loss = (
+                    criterion_wts[0] * l1
+                    + criterion_wts[1] * l2
+                    + criterion_wts[2] * l3
+                )
 
                 test_l1 += l1.item()
                 test_l2 += l2.item()
@@ -264,14 +276,24 @@ def main():
 
                 f_pred = (torch.sigmoid(output1).cpu().numpy() > 0.5).reshape(-1)
                 f_ref = target1.cpu().numpy().reshape(-1)
-                test_f += f1_score(f_ref, f_pred, zero_division=1, average='weighted', sample_weight=f_score_weights)
+                test_f += f1_score(
+                    f_ref,
+                    f_pred,
+                    zero_division=1,
+                    average="weighted",
+                    sample_weight=f_score_weights,
+                )
                 nb_test_batches += 1
 
                 true_positives += np.sum((f_pred == 1) & (f_ref == 1))
                 false_positives += np.sum((f_pred == 1) & (f_ref == 0))
                 false_negatives += np.sum((f_pred == 0) & (f_ref == 1))
-                
-                f1_score_unweighted += 2*true_positives/(2*true_positives+false_positives+false_negatives)
+
+                f1_score_unweighted += (
+                    2
+                    * true_positives
+                    / (2 * true_positives + false_positives + false_negatives)
+                )
 
         test_l1 /= len(test_loader.dataset)
         test_l2 /= len(test_loader.dataset)
@@ -279,8 +301,10 @@ def main():
         test_loss /= len(test_loader.dataset)
         test_f /= nb_test_batches
         test_time = time.time() - test_start
-        weighted_accuracy = train_dataset.compute_weighted_accuracy(true_positives, false_positives)
-        
+        weighted_accuracy = train_dataset.compute_weighted_accuracy(
+            true_positives, false_positives
+        )
+
         f1_score_unweighted /= nb_test_batches
 
         # Early stopping
@@ -288,10 +312,29 @@ def main():
             best_loss = test_f
             best_epoch = epoch
             torch.save(model.state_dict(), "data/hnet_model.pt")
-        print('Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}\ttrue_positives: {}\tfalse_positives: {}\tweighted_accuracy: {:.4f}'.format(
-            epoch, train_time, test_time, train_loss, train_l1, train_l2, train_l3, test_loss, test_l1, test_l2, test_l3, test_f, best_epoch, best_loss, true_positives, false_positives, weighted_accuracy))
+        print(
+            "Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}\ttrue_positives: {}\tfalse_positives: {}\tweighted_accuracy: {:.4f}".format(
+                epoch,
+                train_time,
+                test_time,
+                train_loss,
+                train_l1,
+                train_l2,
+                train_l3,
+                test_loss,
+                test_l1,
+                test_l2,
+                test_l3,
+                test_f,
+                best_epoch,
+                best_loss,
+                true_positives,
+                false_positives,
+                weighted_accuracy,
+            )
+        )
         print("F1 Score (unweighted): {:.4f}".format(f1_score_unweighted))
-    print('Best epoch: {}\nBest loss: {}'.format(best_epoch, best_loss))
+    print("Best epoch: {}\nBest loss: {}".format(best_epoch, best_loss))
 
 
 if __name__ == "__main__":

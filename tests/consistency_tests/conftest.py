@@ -5,23 +5,24 @@ import numpy as np
 import torch
 from hungarian_net.train_hnet import HNetGRU, AttentionLayer
 
-#TODO: maybe rewrite docstrings
+# TODO: maybe rewrite docstrings
+
 
 @pytest.fixture(params=[2, 4, 8])
 def max_doas(request) -> int:
     """
     Fixture to provide different values for the maximum number of Directions of Arrival (DOAs).
-    
+
     This fixture parameterizes the `max_doas` value, allowing tests to run with varying numbers
     of DOAs to ensure that the model behaves correctly across different configurations.
-    
+
     Args:
         request (FixtureRequest): Pytest's fixture request object that provides access to the
                                   parameters specified in the `params` list.
-    
+
     Returns:
         int: The current value of `max_doas` for the test iteration.
-    
+
     Example:
         When used in a test, `max_doas` will sequentially take the values 2, 4, and 8.
     """
@@ -72,12 +73,14 @@ def model(max_doas) -> HNetGRU:
     """
     return HNetGRU(max_len=max_doas)
 
+
 @pytest.fixture(params=[128])
 def in_channels(request) -> int:
     """
     Fixture to provide different values for the number of input channels.
     """
     return request.param
+
 
 @pytest.fixture(params=[128])
 def out_channels(request) -> int:
@@ -86,12 +89,14 @@ def out_channels(request) -> int:
     """
     return request.param
 
+
 @pytest.fixture(params=[128])
 def key_channels(request) -> int:
     """
     Fixture to provide different values for the number of key channels.
     """
     return request.param
+
 
 @pytest.fixture
 def attentionLayer(in_channels, out_channels, key_channels) -> AttentionLayer:
