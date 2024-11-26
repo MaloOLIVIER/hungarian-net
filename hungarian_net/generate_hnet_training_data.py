@@ -218,19 +218,38 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
     return data_dict
 
 
-def main(sample_range=None):
-    # MAIN ALGO to generated train and test starts here
-    pickle_filename = "hung_data"
-    max_doas = (
-        2  # maximum number of events/DOAs you want the Hungarian algorithm to associate
-    )
+def main(
+    pickle_filename="hung_data", sample_range=np.array([3000, 5000, 15000]), max_doas=2
+):
+    """
+    Generates and saves training and testing datasets for the Hungarian Network (HNet) model.
 
-    # Default sample_range if not provided
-    if sample_range is None:
-        sample_range = np.array(
-            [3000, 5000, 15000]
-        )  # This has to be adjusted such that all association combinations of
-        # 0, 1, 2 .. max_doas has roughly equal distribution in the training data.
+    This function orchestrates the creation of training and testing data by invoking the `generate_data`
+    function with specified parameters. It ensures that the datasets are balanced and adhere to the
+    defined sample ranges for different Directions of Arrival (DOAs).
+
+    Args:
+        pickle_filename (str, optional): Base name for the output pickle files. Defaults to "hung_data".
+        sample_range (np.array, optional): Array specifying the number of samples for each DOA combination.
+                                           Should correspond to the minimum of `nb_ref` and `nb_pred`.
+                                           Defaults to [3000, 5000, 15000].
+        max_doas (int, optional): Maximum number of Directions of Arrival (DOAs) to consider. Defaults to 2.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If `sample_range` does not have the appropriate length corresponding to `max_doas`.
+
+    Example:
+        >>> main()
+        Generating Training Data...
+        Saving data in: data/hung_data_train, #examples: 405000
+        ...
+        === Summary of Generated Datasets ===
+        Training Data Samples: 405000
+        Testing Data Samples: 40500
+    """
 
     print("\nGenerating Training Data...")
     # Generate training data
