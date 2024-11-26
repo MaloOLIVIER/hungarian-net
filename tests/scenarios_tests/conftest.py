@@ -92,7 +92,7 @@ def nb_epochs(request) -> int:
 
 
 @pytest.fixture(
-    [
+    params=[
         np.array(
             [3000, 5000, 15000]
         ),  # Uniform Distribution : Ensures a balanced number of samples across different DOA combinations.
@@ -138,8 +138,8 @@ def sample_range(request) -> np.array:
         - [5000, 5000, 5000]  (Flat Distribution)
         - [1000, 3000, 31000] (Skewed Distribution)
         - [2600, 5000, 17000] (Slightly Increasing Distribution)
-        - [6300, 4000, 1500] (Reverse Exponential Distribution)
+        - [6300, 4000, 1500]  (Reverse Exponential Distribution)
         - [2000, 7000, 14000] (Custom Mixed Emphasis 1)
-        - [2500, 8000, 8500] (Custom Mixed Emphasis 2)
+        - [2500, 8000, 8500]  (Custom Mixed Emphasis 2)
     """
     return request.param

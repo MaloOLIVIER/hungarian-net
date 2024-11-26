@@ -1,5 +1,6 @@
 # generate_hnet_training_data.py
 
+import datetime
 import random
 import time
 import pickle
@@ -72,18 +73,14 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
         1 if data_type == "train" else 0.1
     )  # Trainings get full samples, testing gets 10%
 
-    # Metadata Containers
+    # Metadata Container
     combination_counts = {}
-    resolution_counts = {}
 
     # For each combination of associations ('nb_ref', 'nb_pred') = [(0, 0), (0, 1), (1, 0) ... (max_doas, max_doas)]
     # Generate random reference ('ref_ang') and prediction ('pred_ang') DOAs at different 'resolution'.
     for resolution in [1, 2, 3, 4, 5, 10, 15, 20, 30]:  # Different angular resolution
         azi_range = range(-180, 180, resolution)
         ele_range = range(-90, 91, resolution)
-
-        # Initialize resolution count
-        resolution_counts[resolution] = 0
 
         for nb_ref in range(max_doas + 1):  # Reference number of DOAs
             for nb_pred in range(max_doas + 1):  # Predicted number of DOAs
@@ -94,11 +91,6 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
                 combination_counts[combination_key] = (
                     combination_counts.get(combination_key, 0) + total_samples
                 )
-
-                # Update resolution count
-                resolution_counts[
-                    resolution
-                ] += 1  # Increment count for current resolution
 
                 # How many examples to generate for the given combination of ('nb_ref', 'nb_pred'), such that the overall dataset is not skewed.
                 total_samples = int(scale_factor * sample_range[min(nb_ref, nb_pred)])
@@ -189,8 +181,13 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
                         pred_cart,
                     ]
                     cnt += 1
+                    
+    # Get current date
+    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
 
-    out_filename = f"data/{pickle_filename}_{data_type}"
+    # Human-readable filename
+    out_filename = f"data/{current_date}_{pickle_filename}_{data_type}_DOA{max_doas}_{abs(hash(tuple(sample_range)))}"
+    
     print(f"Saving data in: {out_filename}, #examples: {len(data_dict)}")
     save_obj(data_dict, out_filename)
 
@@ -207,12 +204,6 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
     print("Distribution of (nb_ref, nb_pred) Combinations:")
     for combo, count in sorted(combination_counts.items()):
         print(f"  {combo}: {count} samples")
-    print()
-
-    # Print Distribution Across Resolutions
-    print("Distribution Across Resolutions:")
-    for res, count in sorted(resolution_counts.items()):
-        print(f"  Resolution {res}°: {count} DOA combinations")
     print("-" * 40)
 
     return data_dict
@@ -250,6 +241,12 @@ def main(
         Training Data Samples: 405000
         Testing Data Samples: 40500
     """
+    
+    print("\n=== Generating Hungarian Network Training Data ===")
+    
+    print("\nChecking Sample Range...")
+    print(f"Sample Range: {sample_range}")
+
 
     print("\nGenerating Training Data...")
     # Generate training data
