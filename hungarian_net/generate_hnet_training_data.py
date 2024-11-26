@@ -181,13 +181,13 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
                         pred_cart,
                     ]
                     cnt += 1
-                    
+
     # Get current date
     current_date = datetime.datetime.now().strftime("%Y-%m-%d")
 
     # Human-readable filename
     out_filename = f"data/{current_date}_{pickle_filename}_{data_type}_DOA{max_doas}_{abs(hash(tuple(sample_range)))}"
-    
+
     print(f"Saving data in: {out_filename}, #examples: {len(data_dict)}")
     save_obj(data_dict, out_filename)
 
@@ -241,12 +241,11 @@ def main(
         Training Data Samples: 405000
         Testing Data Samples: 40500
     """
-    
+
     print("\n=== Generating Hungarian Network Training Data ===")
-    
+
     print("\nChecking Sample Range...")
     print(f"Sample Range: {sample_range}")
-
 
     print("\nGenerating Training Data...")
     # Generate training data

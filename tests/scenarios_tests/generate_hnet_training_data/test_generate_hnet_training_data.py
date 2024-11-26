@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 from hungarian_net.generate_hnet_training_data import main
 
+
 def test_generate_data_with_various_distributions(sample_range, max_doas):
     """
     Parameterized test to generate data with different sample ranges and verify distributions.
