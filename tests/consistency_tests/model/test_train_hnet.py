@@ -51,3 +51,5 @@ def test_attention_layer_initialization(attentionLayer) -> None:
         None
     """
     assert isinstance(attentionLayer, AttentionLayer), f"AttentionLayer is not an instance of AttentionLayer class, got {attentionLayer.__repr__()}"
+    
+# TODO: write test for compute_weight_accuracy
