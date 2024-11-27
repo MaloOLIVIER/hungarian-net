@@ -42,7 +42,7 @@ def main(
         8. Save the best model weights.
         9. Print epoch-wise training and validation metrics.
     """
-    
+
     set_seed()
 
     # Check wether to run on cpu or gpu
@@ -219,7 +219,7 @@ def main(
         )
         print("F1 Score (unweighted): {:.4f}".format(f1_score_unweighted))
     print("Best epoch: {}\nBest loss: {}".format(best_epoch, best_loss))
-    
+
     return model
 
 
@@ -231,7 +231,8 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    
+
+
 if __name__ == "__main__":
     main(
         256,
