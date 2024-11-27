@@ -9,3 +9,7 @@ import pytest
 # TODO: write a non regression test for the model training and testing :
 # to train a model under default parameters at this version of the code should output the same
 # as ADAVANNE's version
+
+@pytest.mark.nonregression
+def test_non_regression():
+    assert False, "TODO: write a non regression test for the generation of data and the model training and testing"

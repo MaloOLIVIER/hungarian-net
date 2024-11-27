@@ -1,0 +1,50 @@
+name: Python package
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8] # Specify the Python versions you want to test
+        #TODO: upgrade whole project to latest Python version
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pytest pytest-cov
+      
+    - name: Modify PYTHONPATH
+      run: |
+        echo "PYTHONPATH=${PYTHONPATH}:${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+
+    - name: Run consistency tests
+      run: |
+        pytest -m consistency
+      env:
+        CI: true
+
+    # - name: Run nonregression tests
+    #   run: |
+    #     pytest -m nonregression
+    #   env:
+    #     CI: true
+
+    - name: Upload Coverage Report as Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report-html
+        path: htmlcov/
