@@ -1,12 +1,14 @@
 # tests/nonregression_tests/conftest.py
 
+import os
+
 import pytest
 import torch
-import os
 from pytest_mock import mocker
+
+from hungarian_net.generate_hnet_training_data import main as generate_data_main
 from hungarian_net.train_hnet import main as train_main
 from hungarian_net.train_hnet import set_seed
-from hungarian_net.generate_hnet_training_data import main as generate_data_main
 
 # TODO: write a non regression test for the generation of data :
 # to generate data under default parameters at this version of the code should output the same
@@ -58,6 +60,7 @@ def test_non_regression_train_hnet(mocker):
             ref_tensor.mean(), trained_tensor.mean(), atol=1e-5
         ), f"Mismatch found in layer: {key}"
         # TODO: still has bugs, need to fix it, atol issue
+        # TODO: git lfs for data files
 
     # Ensure no extra keys in the trained model
     assert len(trained_state_dict) == len(

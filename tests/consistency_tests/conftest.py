@@ -1,7 +1,8 @@
 # tests/consistency_tests/conftest.py
 
 import pytest
-from hungarian_net.models import HNetGRU, AttentionLayer
+
+from hungarian_net.models import AttentionLayer, HNetGRU
 
 # TODO: maybe rewrite docstrings
 

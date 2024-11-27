@@ -1,8 +1,9 @@
 # tests/consistency_tests/generate_hnet_training_data/test_generate_hnet_training_data.py
 
-import pytest
 import numpy as np
-from hungarian_net.generate_hnet_training_data import sph2cart, compute_class_imbalance
+import pytest
+
+from hungarian_net.generate_hnet_training_data import compute_class_imbalance, sph2cart
 
 # TODO: maybe rewrite docstrings
 

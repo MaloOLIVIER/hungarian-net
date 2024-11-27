@@ -99,6 +99,7 @@ mlflow.set_tracking_uri("file:///app/mlruns")
 import mlflow
 import mlflow.pytorch
 
+
 def train_model(config):
     with mlflow.start_run():
         # Log hyperparameters
@@ -310,8 +311,10 @@ Ensure reproducibility by setting seeds in your scripts.
 
 ```python
 import random
+
 import numpy as np
 import torch
+
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -420,12 +423,15 @@ train_hnet.py
  Example Integration**
 
 ```python
+import argparse
+
 import mlflow
 import mlflow.pytorch
 import torch
 from model import HunNetGRU
+
 from data import get_data_loader
-import argparse
+
 
 def train(config):
     set_seed(config['seed'])
@@ -487,13 +493,16 @@ if __name__ == "__main__":
 ### **b. `ablation_study.py` Example Integration**
 
 ```python
+import argparse
+import json
+
 import mlflow
 import mlflow.pytorch
 import torch
 from model import HunNetGRU
+
 from data import get_data_loader
-import argparse
-import json
+
 
 def ablation_experiment(config):
     set_seed(config['seed'])

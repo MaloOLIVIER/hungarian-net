@@ -156,9 +156,11 @@ baseline_model.eval()
 
 **Code Example:**
 ```python
-import torch
-import numpy as np
 import random
+
+import numpy as np
+import torch
+
 
 def set_seed(seed=42):
     torch.manual_seed(seed)

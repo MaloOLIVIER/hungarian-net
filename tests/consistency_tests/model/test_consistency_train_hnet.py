@@ -1,9 +1,10 @@
 # tests/consistency_tests/model/test_train_hnet.py
 
+import numpy as np
 import pytest
 import torch
-import numpy as np
-from hungarian_net.models import HNetGRU, AttentionLayer
+
+from hungarian_net.models import AttentionLayer, HNetGRU
 
 # TODO: maybe rewrite docstrings
 

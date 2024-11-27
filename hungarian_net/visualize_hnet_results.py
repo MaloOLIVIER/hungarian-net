@@ -1,8 +1,9 @@
-import torch
-from train_hnet import HNetGRU, HungarianDataset
-from IPython import embed
-import matplotlib.pyplot as plot
 import random
+
+import matplotlib.pyplot as plot
+import torch
+from IPython import embed
+from train_hnet import HNetGRU, HungarianDataset
 
 use_cuda = False
 max_len = 2

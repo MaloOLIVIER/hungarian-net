@@ -1,11 +1,10 @@
-import torch
-from train_hnet import HNetGRU, HungarianDataset
-from IPython import embed
 import matplotlib.pyplot as plot
-from torch.utils.data import Dataset, DataLoader
-from sklearn.metrics import f1_score
 import numpy as np
-
+import torch
+from IPython import embed
+from sklearn.metrics import f1_score
+from torch.utils.data import DataLoader, Dataset
+from train_hnet import HNetGRU, HungarianDataset
 
 # TODO: understand how the author computed the F1 score
 

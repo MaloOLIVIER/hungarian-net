@@ -1,8 +1,9 @@
 # tests/scenarios_tests/conftest.py
 
-import pytest
 import numpy as np
+import pytest
 import torch
+
 from hungarian_net.models import HNetGRU
 
 

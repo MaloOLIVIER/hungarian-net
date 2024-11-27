@@ -1,7 +1,8 @@
 # tests/scenarios_tests/test_generate_hnet_training_data.py
 
-import pytest
 import numpy as np
+import pytest
+
 from hungarian_net.generate_hnet_training_data import main
 
 

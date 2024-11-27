@@ -1,15 +1,16 @@
 import datetime
 import random
+import time
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
-import numpy as np
 from sklearn.metrics import f1_score
-import time
+from torch.utils.data import DataLoader
 
-from hungarian_net.models import HNetGRU
 from hungarian_net.dataset import HungarianDataset
+from hungarian_net.models import HNetGRU
 
 
 def main(

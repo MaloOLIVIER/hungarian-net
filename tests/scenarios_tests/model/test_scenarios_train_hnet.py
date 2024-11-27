@@ -1,10 +1,12 @@
 # tests/scenarios_tests/model/test_train_hnet.py
 
 import os
+
 import pytest
 import torch
-from hungarian_net.train_hnet import main
+
 from hungarian_net.dataset import HungarianDataset
+from hungarian_net.train_hnet import main
 
 
 @pytest.mark.scenarios
