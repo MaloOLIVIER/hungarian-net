@@ -7,6 +7,7 @@ import pickle
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance
+import torch
 
 
 def sph2cart(azimuth, elevation, r):
@@ -241,6 +242,8 @@ def main(
         Training Data Samples: 405000
         Testing Data Samples: 40500
     """
+    
+    set_seed()
 
     print("\n=== Generating Hungarian Network Training Data ===")
 
@@ -263,6 +266,14 @@ def main(
     print(f"Training Data Samples: {len(train_data_dict)}")
     print(f"Testing Data Samples: {len(test_data_dict)}\n")
 
-
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
 if __name__ == "__main__":
     main()

@@ -1,3 +1,5 @@
+import datetime
+import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -20,8 +22,8 @@ def main(
         batch_size (int, optional): Number of samples per training batch. Defaults to 256.
         nb_epochs (int, optional): Number of training epochs. Defaults to 1000.
         max_len (int, optional): Maximum number of Directions of Arrival (DOAs). Defaults to 2.
-        filename_train (str, optional): Path to the training data file. Defaults to None.
-        filename_test (str, optional): Path to the testing data file. Defaults to None.
+        filename_train (str): Path to the training data file. Defaults to None.
+        filename_test (str): Path to the testing data file. Defaults to None.
 
     Steps:
         1. Check device availability (CPU or GPU).
@@ -40,6 +42,8 @@ def main(
         8. Save the best model weights.
         9. Print epoch-wise training and validation metrics.
     """
+    
+    set_seed()
 
     # Check wether to run on cpu or gpu
     use_cuda = torch.cuda.is_available()
@@ -182,7 +186,16 @@ def main(
         if test_f > best_loss:
             best_loss = test_f
             best_epoch = epoch
-            torch.save(model.state_dict(), "data/hnet_model.pt")
+
+            # Get current date
+            current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+
+            # TODO: change model filename - leverage TensorBoard
+
+            # Human-readable filename
+            # out_filename = f"data/{current_date}_{pickle_filename}_{data_type}_DOA{max_doas}_{'-'.join(map(str, sample_range))}"
+
+            torch.save(model.state_dict(), f"models/{current_date}/hnet_model.pt")
         print(
             "Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}\ttrue_positives: {}\tfalse_positives: {}\tweighted_accuracy: {:.4f}".format(
                 epoch,
@@ -206,7 +219,24 @@ def main(
         )
         print("F1 Score (unweighted): {:.4f}".format(f1_score_unweighted))
     print("Best epoch: {}\nBest loss: {}".format(best_epoch, best_loss))
+    
+    return model
 
 
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    
 if __name__ == "__main__":
-    main()
+    main(
+        256,
+        10,
+        2,
+        "data/20241127/train/hung_data_train_DOA2_1000-3000-31000",
+        "data/20241127/test/hung_data_test_DOA2_1000-3000-31000",
+    )
