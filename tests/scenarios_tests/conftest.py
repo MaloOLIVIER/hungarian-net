@@ -3,7 +3,7 @@
 import pytest
 import numpy as np
 import torch
-from hungarian_net.train_hnet import HNetGRU, AttentionLayer
+from hungarian_net.models import HNetGRU
 
 
 @pytest.fixture(params=[2])
@@ -35,13 +35,6 @@ def batch_size(request) -> int:
     This fixture parameterizes the `batch_size`, allowing tests to verify model performance
     and behavior with various batch sizes. This helps in ensuring that the model scales
     appropriately with different amounts of data processed in each training iteration.
-
-    Args:
-        request (FixtureRequest): Pytest's fixture request object that provides access to the
-                                  parameters specified in the `params` list.
-
-    Returns:
-        int: The current `batch_size` for the test iteration.
 
     Example:
         When used in a test, `batch_size` will sequentially take the values 64, 128, and 256.

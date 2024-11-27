@@ -15,9 +15,9 @@ class HungarianDataset(Dataset):
 
     def __init__(self, train=True, max_len=2, filename=None):
         if train:
-            self.data_dict = load_obj(f"data/{filename}")
+            self.data_dict = load_obj(filename)
         else:
-            self.data_dict = load_obj(f"data/{filename}")
+            self.data_dict = load_obj(filename)
         self.max_len = max_len
 
         self.pos_wts = np.ones(self.max_len**2)
