@@ -1,5 +1,3 @@
-from hungarian_net.generate_hnet_training_data import load_obj
-from IPython import embed
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,18 +6,40 @@ import numpy as np
 from sklearn.metrics import f1_score
 import time
 
-from hungarian_net.models import AttentionLayer, HNetGRU
+from hungarian_net.models import HNetGRU
 from hungarian_net.dataset import HungarianDataset
 
 
-def main():
-    filename_train = "train_data_dict.pkl"
-    filename_test = "test_data_dict.pkl"
-    batch_size = 256
-    nb_epochs = 1000
-    max_len = (
-        2  # maximum number of events/DOAs you want the hungarian algo to associate,
-    )
+def main(
+    batch_size=256, nb_epochs=1000, max_len=2, filename_train=None, filename_test=None
+):
+    """
+    Train the Hungarian Network (HNetGRU) model.
+
+    Args:
+        batch_size (int, optional): Number of samples per training batch. Defaults to 256.
+        nb_epochs (int, optional): Number of training epochs. Defaults to 1000.
+        max_len (int, optional): Maximum number of Directions of Arrival (DOAs). Defaults to 2.
+        filename_train (str, optional): Path to the training data file. Defaults to None.
+        filename_test (str, optional): Path to the testing data file. Defaults to None.
+
+    Steps:
+        1. Check device availability (CPU or GPU).
+        2. Load training and validation datasets using HungarianDataset.
+        3. Initialize the HNetGRU model and optimizer.
+        4. Define loss functions with appropriate weights.
+        5. Iterate over epochs to train the model:
+            a. Set model to training mode.
+            b. Perform forward pass, compute losses, and update model weights.
+            c. Accumulate training loss metrics.
+        6. After each epoch, evaluate the model on the validation set:
+            a. Set model to evaluation mode.
+            b. Perform forward pass without gradient computation.
+            c. Compute validation losses and F1 scores.
+        7. Implement early stopping based on validation F1 score.
+        8. Save the best model weights.
+        9. Print epoch-wise training and validation metrics.
+    """
 
     # Check wether to run on cpu or gpu
     use_cuda = torch.cuda.is_available()
@@ -27,7 +47,9 @@ def main():
     print("Using device:", device)
 
     # load training dataset
-    train_dataset = HungarianDataset(train=True, max_len=max_len, filename=filename)
+    train_dataset = HungarianDataset(
+        train=True, max_len=max_len, filename=filename_train
+    )
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True
     )
@@ -41,7 +63,7 @@ def main():
 
     # load validation dataset
     test_loader = DataLoader(
-        HungarianDataset(train=False, max_len=max_len),
+        HungarianDataset(train=False, max_len=max_len, filename=filename_test),
         batch_size=batch_size,
         shuffle=True,
         drop_last=True,
