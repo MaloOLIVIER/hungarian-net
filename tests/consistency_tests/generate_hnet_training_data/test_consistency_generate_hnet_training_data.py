@@ -7,6 +7,7 @@ from hungarian_net.generate_hnet_training_data import sph2cart, compute_class_im
 # TODO: maybe rewrite docstrings
 
 
+@pytest.mark.consistency
 def test_sph2cart():
     azimuth = 0
     elevation = 0
@@ -16,6 +17,7 @@ def test_sph2cart():
     assert np.allclose(result, expected), f"Expected {expected}, got {result}"
 
 
+@pytest.mark.consistency
 @pytest.mark.parametrize(
     "azimuth, elevation, r, expected",
     [
@@ -47,6 +49,7 @@ def test_sph2cart_multiple_cases(azimuth, elevation, r, expected):
     ), f"Expected {expected}, got {result}"
 
 
+@pytest.mark.consistency
 def test_compute_class_imbalance():
     """
     Test compute_class_imbalance with a simple data_dict containing

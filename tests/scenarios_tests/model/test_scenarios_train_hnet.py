@@ -7,6 +7,7 @@ from hungarian_net.train_hnet import main
 from hungarian_net.dataset import HungarianDataset
 
 
+@pytest.mark.scenarios
 @pytest.mark.parametrize(
     "training_data, test_data",
     [

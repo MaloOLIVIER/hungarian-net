@@ -3,11 +3,12 @@
 import pytest
 import torch
 import numpy as np
-from hungarian_net.train_hnet import HNetGRU, AttentionLayer
+from hungarian_net.models import HNetGRU, AttentionLayer
 
 # TODO: maybe rewrite docstrings
 
 
+@pytest.mark.consistency
 def test_model_initialization(model, max_doas) -> None:
     """Test the initialization of the HNetGRU model.
 
@@ -24,6 +25,7 @@ def test_model_initialization(model, max_doas) -> None:
     ), f"Expected max_doas {max_doas}, got {model.max_len}"
 
 
+@pytest.mark.consistency
 def test_forward_pass(model, batch_size) -> None:
     """Test the forward pass of the HNetGRU model to ensure correct output shapes.
 
@@ -55,6 +57,7 @@ def test_forward_pass(model, batch_size) -> None:
     ), f"Expected output3 shape {(batch_size, model.max_len)}, got {output3.shape}"
 
 
+@pytest.mark.consistency
 def test_attention_layer_initialization(attentionLayer) -> None:
     """Test the initialization of the AttentionLayer.
 
