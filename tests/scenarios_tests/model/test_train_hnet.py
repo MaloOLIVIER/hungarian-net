@@ -45,7 +45,7 @@ def test_train_model_under_various_distributions(
 ):
     """
     Train the HNetGRU model with various data distributions.
-    
+
     Args:
         max_doas (int): Maximum number of Directions of Arrival (DOAs).
         batch_size (int): Number of samples per training batch.
@@ -54,4 +54,4 @@ def test_train_model_under_various_distributions(
         test_data (str): Path to the testing data file.
     """
 
-    assert False, "TODO: implement the test" 
+    assert False, "TODO: implement the test"
