@@ -3,169 +3,18 @@ from IPython import embed
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import numpy as np
 from sklearn.metrics import f1_score
 import time
 
-
-class AttentionLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, key_channels):
-        super(AttentionLayer, self).__init__()
-        self.conv_Q = nn.Conv1d(in_channels, key_channels, kernel_size=1, bias=False)
-        self.conv_K = nn.Conv1d(in_channels, key_channels, kernel_size=1, bias=False)
-        self.conv_V = nn.Conv1d(in_channels, out_channels, kernel_size=1, bias=False)
-
-    def forward(self, x):
-        Q = self.conv_Q(x)
-        K = self.conv_K(x)
-        V = self.conv_V(x)
-        A = Q.permute(0, 2, 1).matmul(K).softmax(2)
-        x = A.matmul(V.permute(0, 2, 1)).permute(0, 2, 1)
-        return x
-
-    def __repr__(self):
-        return (
-            self._get_name()
-            + "(in_channels={}, out_channels={}, key_channels={})".format(
-                self.conv_Q.in_channels,
-                self.conv_V.out_channels,
-                self.conv_K.out_channels,
-            )
-        )
-
-
-class HNetGRU(nn.Module):
-    def __init__(self, max_len=4, hidden_size=128):
-        super().__init__()
-        self.nb_gru_layers = 1
-        self.max_len = max_len
-        self.gru = nn.GRU(max_len, hidden_size, self.nb_gru_layers, batch_first=True)
-        self.attn = AttentionLayer(hidden_size, hidden_size, hidden_size)
-        self.fc1 = nn.Linear(hidden_size, max_len)
-
-    def forward(self, query):
-        # query - batch x seq x feature
-
-        out, _ = self.gru(query)
-        # out - batch x seq x hidden
-
-        out = out.permute((0, 2, 1))
-        # out - batch x hidden x seq
-
-        out = self.attn.forward(out)
-        # out - batch x hidden x seq
-
-        out = out.permute((0, 2, 1))
-        out = torch.tanh(out)
-        # out - batch x seq x hidden
-
-        out = self.fc1(out)
-        # out - batch x seq x feature
-
-        out1 = out.view(out.shape[0], -1)
-        # out1 - batch x (seq x feature)
-
-        out2, _ = torch.max(out, dim=-1)
-        # out2 - batch x seq x 1
-
-        out3, _ = torch.max(out, dim=-2)
-        # out3 - batch x 1 x feature
-
-        return out1.squeeze(), out2.squeeze(), out3.squeeze()
-
-
-class HungarianDataset(Dataset):
-    """Face Landmarks dataset."""
-
-    def __init__(self, train=True, max_len=4):
-        if train:
-            self.data_dict = load_obj("data/hung_data_train")
-        else:
-            self.data_dict = load_obj("data/hung_data_test")
-        self.max_len = max_len
-
-        self.pos_wts = np.ones(self.max_len**2)
-        self.f_scr_wts = np.ones(self.max_len**2)
-        if train:
-            loc_wts = np.zeros(self.max_len**2)
-            for i in range(len(self.data_dict)):
-                label = self.data_dict[i][3]
-                loc_wts += label.reshape(-1)
-            self.f_scr_wts = loc_wts / len(self.data_dict)
-            self.pos_wts = (len(self.data_dict) - loc_wts) / loc_wts
-
-    def __len__(self):
-        return len(self.data_dict)
-
-    def get_pos_wts(self):
-        return self.pos_wts
-
-    def get_f_wts(self):
-        return self.f_scr_wts
-
-    def compute_class_imbalance(self):
-        """
-        Computes the class imbalance in the dataset.
-
-        This method iterates over the data dictionary and counts the occurrences
-        of each class in the distance assignment matrix (da_mat).
-
-        Returns:
-            dict: A dictionary where keys are class labels and values are the
-                  counts of occurrences of each class.
-        """
-        class_counts = {}
-        for key, value in self.data_dict.items():
-            nb_ref, nb_pred, dist_mat, da_mat, ref_cart, pred_cart = value
-            for row in da_mat:
-                for elem in row:
-                    if elem not in class_counts:
-                        class_counts[elem] = 0
-                    class_counts[elem] += 1
-        return class_counts
-
-    def __getitem__(self, idx):
-        feat = self.data_dict[idx][2]
-        label = self.data_dict[idx][3]
-
-        label = [label.reshape(-1), label.sum(-1), label.sum(-2)]
-        return feat, label
-
-    def compute_weighted_accuracy(self, n1star, n0star):
-        """
-        Compute the weighted accuracy of the model.
-        The weighted accuracy is calculated based on the class imbalance in the dataset.
-        The weights for each class are determined by the proportion of the opposite class.
-        Parameters:
-            n1star (int): The number of true positives.
-            n0star (int): The number of false positives.
-        Returns:
-            WA (float): The weighted accuracy of the model.
-
-        References:
-        Title: How To Train Your Deep Multi-Object Tracker
-        Authors: Yihong Xu, Aljosa Osep, Yutong Ban, Radu Horaud, Laura Leal-Taixe, Xavier Alameda-Pineda
-        Year: 2020
-
-        URL: https://arxiv.org/abs/1906.06618
-        """
-        WA = 0
-
-        class_counts = self.compute_class_imbalance()
-
-        n0 = class_counts.get(0, 0)  # number of 0s
-        n1 = class_counts.get(1, 0)  # number of 1s
-
-        w0 = n1 / (n0 + n1)  # weight for class 0
-        w1 = 1 - w0  # weight for class 1
-
-        WA = (w1 * n1star + w0 * n0star) / (w1 * n1 + w0 * n0)
-
-        return WA
+from hungarian_net.models import AttentionLayer, HNetGRU
+from hungarian_net.dataset import HungarianDataset
 
 
 def main():
+    filename_train = "train_data_dict.pkl"
+    filename_test = "test_data_dict.pkl"
     batch_size = 256
     nb_epochs = 1000
     max_len = (
@@ -178,7 +27,7 @@ def main():
     print("Using device:", device)
 
     # load training dataset
-    train_dataset = HungarianDataset(train=True, max_len=max_len)
+    train_dataset = HungarianDataset(train=True, max_len=max_len, filename=filename)
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True, drop_last=True
     )
