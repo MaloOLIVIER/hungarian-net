@@ -1,6 +1,7 @@
 # generate_hnet_training_data.py
 
 import datetime
+import os
 import pickle
 import random
 import time
@@ -185,10 +186,12 @@ def generate_data(pickle_filename, max_doas, sample_range, data_type="train"):
                     cnt += 1
 
     # Get current date
-    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    current_date = datetime.datetime.now().strftime("%Y%m%d")
+
+    os.makedirs(f"data/{current_date}/{data_type}", exist_ok=True)
 
     # Human-readable filename
-    out_filename = f"data/{current_date}_{pickle_filename}_{data_type}_DOA{max_doas}_{'-'.join(map(str, sample_range))}"
+    out_filename = f"data/{current_date}/{data_type}/{pickle_filename}_{data_type}_DOA{max_doas}_{'-'.join(map(str, sample_range))}"
 
     print(f"Saving data in: {out_filename}, #examples: {len(data_dict)}")
     save_obj(data_dict, out_filename)

@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 import time
 
@@ -14,7 +15,12 @@ from hungarian_net.models import HNetGRU
 
 
 def main(
-    batch_size=256, nb_epochs=1000, max_len=2, filename_train=None, filename_test=None
+    batch_size=256,
+    nb_epochs=1000,
+    max_len=2,
+    sample_range_used=[3000, 5000, 15000],
+    filename_train="data/reference/hung_data_train",
+    filename_test="data/reference/hung_data_test",
 ):
     """
     Train the Hungarian Network (HNetGRU) model.
@@ -189,14 +195,16 @@ def main(
             best_epoch = epoch
 
             # Get current date
-            current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            current_date = datetime.datetime.now().strftime("%Y%m%d")
 
             # TODO: change model filename - leverage TensorBoard
 
-            # Human-readable filename
-            # out_filename = f"data/{current_date}_{pickle_filename}_{data_type}_DOA{max_doas}_{'-'.join(map(str, sample_range))}"
+            os.makedirs(f"models/{current_date}", exist_ok=True)
 
-            torch.save(model.state_dict(), f"models/{current_date}/hnet_model.pt")
+            # Human-readable filename
+            out_filename = f"models/{current_date}/hnet_model_DOA{max_len}_{'-'.join(map(str, sample_range_used))}.pt"
+
+            torch.save(model.state_dict(), out_filename)
         print(
             "Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}\ttrue_positives: {}\tfalse_positives: {}\tweighted_accuracy: {:.4f}".format(
                 epoch,
