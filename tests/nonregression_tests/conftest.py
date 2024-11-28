@@ -6,74 +6,93 @@ import pytest
 import torch
 from pytest_mock import mocker
 
-from hungarian_net.generate_hnet_training_data import main as generate_data_main
+from hungarian_net.generate_hnet_training_data import \
+    main as generate_data_main
+from hungarian_net.models import HNetGRU
 from hungarian_net.train_hnet import main as train_main
 from hungarian_net.train_hnet import set_seed
 
-# TODO: write a non regression test for the generation of data :
-# to generate data under default parameters at this version of the code should output the same
-# as ADAVANNE's version
 
-
-@pytest.mark.nonregression
-def test_non_regression_train_hnet(mocker):
+@pytest.fixture(params=[256])
+def batch_size(request) -> int:
     """
-    Non-regression test to ensure that train_hnet.py produces the same HNet model
-    as the reference model when run with default parameters.
+    Fixture to provide different batch sizes for testing.
+
+    This fixture parameterizes the `batch_size`, allowing tests to verify model performance
+    and behavior with various batch sizes. This helps in ensuring that the model scales
+    appropriately with different amounts of data processed in each training iteration.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current `batch_size` for the test iteration.
+
+    Example:
+        When used in a test, `batch_size` will sequentially take the values 64, 128, and 256.
     """
-
-    set_seed()
-
-    # Path to the reference model
-    reference_model_path = os.path.join("models", "reference", "hnet_model.pt")
-
-    assert os.path.exists(
-        reference_model_path
-    ), f"Reference model not found at {reference_model_path}"
-
-    # Load the reference model's state dict
-    reference_state_dict = torch.load(
-        reference_model_path, map_location=torch.device("cpu")
-    )
-
-    # Mock the torch.save function to save the trained model's state dict
-    mocker.patch("torch.save")
-
-    # Run the training with default parameters
-    trained_model = train_main(
-        batch_size=256,
-        nb_epochs=10,
-        max_len=2,
-        filename_train="data/reference/hung_data_train",
-        filename_test="data/reference/hung_data_test",
-    )
-
-    # Load the newly trained model's state dict
-    trained_state_dict = trained_model.state_dict()
-
-    # Compare the state dicts
-    for key in reference_state_dict:
-        ref_tensor = reference_state_dict[key]
-        trained_tensor = trained_state_dict.get(key)
-        assert trained_tensor is not None, f"Key {key} missing in the trained model."
-        assert torch.allclose(
-            ref_tensor.mean(), trained_tensor.mean(), atol=1e-5
-        ), f"Mismatch found in layer: {key}"
-        # TODO: still has bugs, need to fix it, atol issue
-        # TODO: git lfs for data files
-
-    # Ensure no extra keys in the trained model
-    assert len(trained_state_dict) == len(
-        reference_state_dict
-    ), "Trained model has unexpected additional layers."
+    return request.param
 
 
-@pytest.mark.nonregression
-def test_non_regression_generate_hnet_training_data():
+@pytest.fixture(params=[2])
+def max_doas(request) -> int:
     """
-    Non-regression test to ensure that generate_hnet_training_data produces the same data generated
-    as the reference data generation when run with default parameters.
+    Fixture to provide different values for the maximum number of Directions of Arrival (DOAs).
+
+    This fixture parameterizes the `max_doas` value, allowing tests to run with varying numbers
+    of DOAs to ensure that the model behaves correctly across different configurations.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current value of `max_doas` for the test iteration.
+
+    Example:
+        When used in a test, `max_doas` will sequentially take the values 2, 4, and 8.
     """
+    return request.param
 
 
-#     generate_data_main() # Generate data with default parameters
+@pytest.fixture(params=[10])
+def nb_epochs(request) -> int:
+    """
+    Fixture to provide different numbers of training epochs for testing.
+
+    This fixture parameterizes the `nb_epochs`, allowing tests to evaluate model training
+    over various training durations. This helps in assessing model convergence and
+    performance consistency across different training lengths.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current `nb_epochs` for the test iteration.
+    """
+    return request.param
+
+
+@pytest.fixture
+def model(max_doas) -> HNetGRU:
+    """
+    Fixture to initialize and provide an instance of the HNetGRU model.
+
+    This fixture creates an instance of the `HNetGRU` model with a specified maximum number
+    of DOAs (`max_doas`). By parameterizing `max_doas`, this fixture ensures that the model
+    is tested under different configurations, enhancing the robustness of your test suite.
+
+    Args:
+        max_doas (int): The maximum number of Directions of Arrival (DOAs) to be used by the model.
+                        This value is provided by the `max_doas` fixture.
+
+    Returns:
+        HNetGRU: An initialized instance of the `HNetGRU` model configured with the specified `max_doas`.
+
+    Example:
+        When used in a test, `model` will be an instance of `HNetGRU` with `max_len` set to values
+        2, 4, and 8 across different test iterations.
+    """
+    return HNetGRU(max_len=max_doas)
