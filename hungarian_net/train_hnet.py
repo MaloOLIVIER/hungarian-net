@@ -25,29 +25,78 @@ def main(
     """
     Train the Hungarian Network (HNetGRU) model.
 
+    This function orchestrates the training process of the HNetGRU model, including data loading,
+    model initialization, training loop with validation, and saving the best-performing model.
+
     Args:
-        batch_size (int, optional): Number of samples per training batch. Defaults to 256.
-        nb_epochs (int, optional): Number of training epochs. Defaults to 1000.
-        max_len (int, optional): Maximum number of Directions of Arrival (DOAs). Defaults to 2.
-        filename_train (str): Path to the training data file. Defaults to None.
-        filename_test (str): Path to the testing data file. Defaults to None.
+        batch_size (int, optional):
+            Number of samples per training batch. Defaults to 256.
+        nb_epochs (int, optional):
+            Total number of training epochs. Defaults to 1000.
+        max_len (int, optional):
+            Maximum number of Directions of Arrival (DOAs) the model can handle. Defaults to 2.
+        sample_range_used (List[int], optional):
+            List specifying the range of samples used for training. Defaults to [3000, 5000, 15000].
+        filename_train (str, optional):
+            Path to the training data file. Defaults to "data/reference/hung_data_train".
+        filename_test (str, optional):
+            Path to the testing data file. Defaults to "data/reference/hung_data_test".
 
     Steps:
-        1. Check device availability (CPU or GPU).
-        2. Load training and validation datasets using HungarianDataset.
-        3. Initialize the HNetGRU model and optimizer.
-        4. Define loss functions with appropriate weights.
-        5. Iterate over epochs to train the model:
-            a. Set model to training mode.
-            b. Perform forward pass, compute losses, and update model weights.
-            c. Accumulate training loss metrics.
-        6. After each epoch, evaluate the model on the validation set:
-            a. Set model to evaluation mode.
-            b. Perform forward pass without gradient computation.
-            c. Compute validation losses and F1 scores.
-        7. Implement early stopping based on validation F1 score.
-        8. Save the best model weights.
-        9. Print epoch-wise training and validation metrics.
+        1. **Set Random Seed**:
+            - Ensures reproducibility by setting seeds for Python's `random`, NumPy, and PyTorch.
+
+        2. **Device Configuration**:
+            - Checks for GPU availability and sets the computation device accordingly (CUDA or CPU).
+
+        3. **Data Loading**:
+            - Loads the training dataset using `HungarianDataset` with specified parameters.
+            - Initializes a `DataLoader` for batching and shuffling training data.
+            - Calculates class imbalance to handle potential data skew.
+            - Loads the validation dataset similarly.
+
+        4. **Model and Optimizer Initialization**:
+            - Instantiates the `HNetGRU` model and moves it to the configured device.
+            - Sets up the optimizer (`Adam`) for training the model parameters.
+
+        5. **Loss Function Definition**:
+            - Defines three separate Binary Cross-Entropy with Logits Loss functions (`criterion1`, `criterion2`, `criterion3`).
+            - Assigns equal weights to each loss component.
+
+        6. **Training Loop**:
+            - Iterates over the specified number of epochs.
+            - **Training Phase**:
+                a. Sets the model to training mode.
+                b. Iterates over training batches:
+                    - Performs forward pass.
+                    - Computes individual losses.
+                    - Aggregates losses with defined weights.
+                    - Backpropagates and updates model weights.
+                c. Accumulates and averages training losses.
+
+            - **Validation Phase**:
+                a. Sets the model to evaluation mode.
+                b. Iterates over validation batches without gradient computation:
+                    - Performs forward pass.
+                    - Computes losses.
+                    - Calculates F1 scores with weighted averaging.
+                c. Accumulates and averages validation losses and F1 scores.
+
+            - **Early Stopping**:
+                - Monitors validation F1 score to identify and save the best-performing model.
+                - Saves model weights with a timestamped filename for version tracking.
+
+            - **Metrics Logging**:
+                - Prints comprehensive metrics after each epoch, including losses, F1 scores, and accuracy.
+                - Tracks unweighted F1 scores separately for detailed analysis.
+
+        7. **Final Output**:
+            - Prints the best epoch and corresponding F1 score.
+            - Returns the best-performing model instance.
+
+    Returns:
+        HNetGRU:
+            The trained HNetGRU model with the best validation F1 score.
     """
 
     set_seed()
@@ -245,10 +294,4 @@ def set_seed(seed=42):
 
 
 if __name__ == "__main__":
-    main(
-        256,
-        10,
-        2,
-        "data/20241127/train/hung_data_train_DOA2_1000-3000-31000",
-        "data/20241127/test/hung_data_test_DOA2_1000-3000-31000",
-    )
+    main()
