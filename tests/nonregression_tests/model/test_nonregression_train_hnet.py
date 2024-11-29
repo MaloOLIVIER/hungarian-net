@@ -10,6 +10,8 @@ from hungarian_net.models import HNetGRU
 from hungarian_net.train_hnet import main as train_main
 from hungarian_net.train_hnet import set_seed
 
+# TODO: Performing a non-regression test by directly comparing a newly trained model with a reference model is ineffective due to inherent numerical computation errors that can cause discrepancies.
+# TODO: In future iterations, it would be more effective to assess regression by evaluating the model's individual components (e.g., functions, classes, methods) to ensure each part operates as expected without being affected by numerical inaccuracies.
 
 @pytest.mark.nonregression
 def test_non_regression_train_hnet(mocker, max_doas, model, batch_size, nb_epochs):
