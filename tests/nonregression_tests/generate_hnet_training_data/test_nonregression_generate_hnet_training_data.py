@@ -2,8 +2,7 @@
 import pytest
 from pytest_mock import mocker
 
-from hungarian_net.generate_hnet_training_data import \
-    main as generate_data_main
+from hungarian_net.generate_hnet_training_data import main as generate_data_main
 from hungarian_net.train_hnet import set_seed
 
 # TODO: write a non regression test for the generation of data :
