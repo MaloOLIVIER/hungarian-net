@@ -1,8 +1,6 @@
 # tests/nonregression_tests/conftest.py
 
 import pytest
-from pytest_mock import mocker
-
 from hungarian_net.models import HNetGRU
 
 
