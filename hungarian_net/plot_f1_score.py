@@ -10,7 +10,7 @@ from train_hnet import HNetGRU, HungarianDataset
 
 
 use_cuda = False
-max_len = 10
+max_len = 2
 
 device = torch.device("cuda" if use_cuda else "cpu")
 kwargs = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
@@ -19,19 +19,18 @@ model = HNetGRU(max_len=max_len).to(device)
 model.eval()
 
 model.load_state_dict(
-    torch.load("data/hnet_model.pt", map_location=torch.device("cpu"))
+    torch.load("models/reference/hnet_model.pt", map_location=torch.device("cpu"))
 )
-test_data = HungarianDataset(train=False, max_len=max_len)
 
 test_f = 0
 nb_test_batches = 0
-train_dataset = HungarianDataset(train=True, max_len=max_len)
+train_dataset = HungarianDataset(train=True, max_len=max_len, filename="data/reference/hung_data_train")
 batch_size = 256
 f_score_weights = np.tile(train_dataset.get_f_wts(), batch_size)
 
 # load test dataset
 test_loader = DataLoader(
-    HungarianDataset(train=False, max_len=max_len),
+    HungarianDataset(train=False, max_len=max_len, filename= "data/reference/hung_data_test"),
     batch_size=batch_size,
     shuffle=True,
     drop_last=True,
@@ -56,7 +55,7 @@ with torch.no_grad():
 
 # Compute F1 Score
 test_f /= nb_test_batches
-print(f"F1 Score on Test Data: {test_f:.4f}")
+print(f"F1 Score on Test Data: {test_f}")
 
 # Plot F1 Score
 plot.figure(figsize=(6, 4))
