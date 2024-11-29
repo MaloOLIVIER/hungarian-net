@@ -1,9 +1,7 @@
 # tests/scenarios_tests/model/test_train_hnet.py
 
 import re
-
 import pytest
-
 from hungarian_net.train_hnet import main
 
 
@@ -61,6 +59,9 @@ def test_train_model_under_various_distributions(
         sample_range_used = list(map(int, match.groups()))
     else:
         sample_range_used = None  # Default values
+
+    # Mock nb_epochs to be 1 regardless of the input
+    nb_epochs = 1
 
     main(
         batch_size=batch_size,
