@@ -90,7 +90,7 @@ def main(
     criterion_wts = [1.0, 1.0, 1.0]
 
     # Start training
-    best_loss = -1
+    best_f = -1
     best_epoch = -1
     for epoch in range(1, nb_epochs + 1):
         train_start = time.time()
@@ -190,8 +190,8 @@ def main(
         f1_score_unweighted /= nb_test_batches
 
         # Early stopping
-        if test_f > best_loss:
-            best_loss = test_f
+        if test_f > best_f:
+            best_f = test_f
             best_epoch = epoch
 
             # Get current date
@@ -205,6 +205,8 @@ def main(
             out_filename = f"models/{current_date}/hnet_model_DOA{max_len}_{'-'.join(map(str, sample_range_used))}.pt"
 
             torch.save(model.state_dict(), out_filename)
+            
+            model_to_return = model
         print(
             "Epoch: {}\t time: {:0.2f}/{:0.2f}\ttrain_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\ttest_loss: {:.4f} ({:.4f}, {:.4f}, {:.4f})\tf_scr: {:.4f}\tbest_epoch: {}\tbest_f_scr: {:.4f}\ttrue_positives: {}\tfalse_positives: {}\tweighted_accuracy: {:.4f}".format(
                 epoch,
@@ -220,16 +222,16 @@ def main(
                 test_l3,
                 test_f,
                 best_epoch,
-                best_loss,
+                best_f,
                 true_positives,
                 false_positives,
                 weighted_accuracy,
             )
         )
-        print("F1 Score (unweighted): {:.4f}".format(f1_score_unweighted))
-    print("Best epoch: {}\nBest loss: {}".format(best_epoch, best_loss))
+        print("F1 Score (unweighted) : {:.4f}".format(f1_score_unweighted))
+    print("Best epoch : {}\nBest F1 score : {}".format(best_epoch, best_f))
 
-    return model
+    return model_to_return
 
 
 def set_seed(seed=42):
