@@ -26,7 +26,7 @@ This repository consists of three Python scripts
 
 ### Prerequisites
 
-The provided codebase has been tested on Python 3.8.1 and Torch 1.10
+The provided codebase has been tested on Python 3.12 and Torch 2.5
 
 
 ### Training the Hnet
