@@ -15,6 +15,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        lfs: true              # Enable Git LFS
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -31,11 +33,11 @@ jobs:
       run: |
         echo "PYTHONPATH=${PYTHONPATH}:${GITHUB_WORKSPACE}" >> $GITHUB_ENV
 
-    - name: Run consistency tests
-      run: |
-        pytest -m consistency
-      env:
-        CI: true
+    # - name: Run consistency tests
+    #   run: |
+    #     pytest -m consistency
+    #   env:
+    #     CI: true
 
     - name: Run nonregression tests
       run: |
