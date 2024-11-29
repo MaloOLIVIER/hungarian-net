@@ -24,13 +24,17 @@ model.load_state_dict(
 
 test_f = 0
 nb_test_batches = 0
-train_dataset = HungarianDataset(train=True, max_len=max_len, filename="data/reference/hung_data_train")
+train_dataset = HungarianDataset(
+    train=True, max_len=max_len, filename="data/reference/hung_data_train"
+)
 batch_size = 256
 f_score_weights = np.tile(train_dataset.get_f_wts(), batch_size)
 
 # load test dataset
 test_loader = DataLoader(
-    HungarianDataset(train=False, max_len=max_len, filename= "data/reference/hung_data_test"),
+    HungarianDataset(
+        train=False, max_len=max_len, filename="data/reference/hung_data_test"
+    ),
     batch_size=batch_size,
     shuffle=True,
     drop_last=True,

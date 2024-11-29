@@ -33,17 +33,17 @@ jobs:
       run: |
         echo "PYTHONPATH=${PYTHONPATH}:${GITHUB_WORKSPACE}" >> $GITHUB_ENV
 
-    # - name: Run consistency tests
-    #   run: |
-    #     pytest -m consistency
-    #   env:
-    #     CI: true
-
-    - name: Run nonregression tests
+    - name: Run consistency tests
       run: |
-        pytest -m nonregression
+        pytest -m consistency
       env:
         CI: true
+
+    # - name: Run nonregression tests
+    #   run: |
+    #     pytest -m nonregression
+    #   env:
+    #     CI: true
 
     - name: Upload Coverage Report as Artifact
       uses: actions/upload-artifact@v4
