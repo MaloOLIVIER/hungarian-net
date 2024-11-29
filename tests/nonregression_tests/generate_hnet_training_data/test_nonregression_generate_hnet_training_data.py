@@ -8,6 +8,7 @@ from hungarian_net.train_hnet import set_seed
 # TODO: Performing a non-regression test by directly comparing generated data with reference data is ineffective due to inherent numerical computation errors that may cause discrepancies.
 # TODO: In future iterations, it would be more effective to assess regression by evaluating the individual components of the data generation program (e.g., functions, classes, methods) to ensure each part operates correctly without being affected by numerical inaccuracies.
 
+
 @pytest.mark.nonregression
 def test_non_regression_generate_hnet_training_data():
     """
@@ -16,5 +17,5 @@ def test_non_regression_generate_hnet_training_data():
     """
 
     set_seed()
-    
-    #TODO: implement the test
+
+    # TODO: implement the test
