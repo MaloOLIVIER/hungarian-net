@@ -2,7 +2,7 @@ import numpy as np
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 
-from hungarian_net.generate_hnet_training_data import load_obj
+from generate_hnet_training_data import load_obj
 
 
 class HungarianDataset(Dataset):
@@ -101,6 +101,7 @@ class HungarianDataset(Dataset):
 
         return WA
 
+#TODO: factorize HungarianDataset in HungarianDataModule
 
 class HungarianDataModule(LightningDataModule):
     """
