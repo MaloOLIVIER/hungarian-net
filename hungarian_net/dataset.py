@@ -1,5 +1,6 @@
 import numpy as np
-from torch.utils.data import Dataset
+from lightning import LightningDataModule
+from torch.utils.data import DataLoader, Dataset
 
 from hungarian_net.generate_hnet_training_data import load_obj
 
@@ -99,3 +100,60 @@ class HungarianDataset(Dataset):
         WA = (w1 * n1star + w0 * n0star) / (w1 * n1 + w0 * n0)
 
         return WA
+
+
+class HungarianDataModule(LightningDataModule):
+    """
+    LightningDataModule for HungarianDataset.
+
+    Args:
+        train_filename (str): Filename for training data.
+        test_filename (str): Filename for testing data.
+        max_len (int, optional): Maximum number of Directions of Arrival (DOAs). Defaults to 2.
+        batch_size (int, optional): Batch size for data loaders. Defaults to 256.
+        num_workers (int, optional): Number of workers for data loaders. Defaults to 4.
+    """
+
+    def __init__(
+        self, train_filename, test_filename, max_len=2, batch_size=256, num_workers=4
+    ):
+        super().__init__()
+        self.train_filename = train_filename
+        self.test_filename = test_filename
+        self.max_len = max_len
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+
+    # def transfer_batch_to_device(self, batch, device, dataloader_idx):
+
+    def setup(self, stage=None):
+        if stage == "fit" or stage is None:
+            self.train_dataset = HungarianDataset(
+                train=True, max_len=self.max_len, filename=self.train_filename
+            )
+            self.val_dataset = HungarianDataset(
+                train=False, max_len=self.max_len, filename=self.test_filename
+            )
+        if stage == "test" or stage is None:
+            self.test_dataset = HungarianDataset(
+                train=False, max_len=self.max_len, filename=self.test_filename
+            )
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            shuffle=True,
+            drop_last=True,
+        )
+
+    def val_dataloader(self):
+        return DataLoader(
+            self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers
+        )
+
+    def test_dataloader(self):
+        return DataLoader(
+            self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers
+        )
