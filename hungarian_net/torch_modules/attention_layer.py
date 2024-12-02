@@ -1,14 +1,5 @@
-from functools import partial
-from typing import Any, Dict, Tuple
-
-import lightning as L
 import torch
 import torch.nn as nn
-import torchmetrics
-from lightning.pytorch.utilities.types import STEP_OUTPUT
-from sklearn.metrics import f1_score
-from torch import optim
-from torchmetrics import MetricCollection
 
 class AttentionLayer(nn.Module):
     def __init__(self, in_channels, out_channels, key_channels):
