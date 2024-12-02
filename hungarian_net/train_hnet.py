@@ -1,60 +1,23 @@
 import datetime
 import os
 import random
+import sys
 import time
+import warnings
+from typing import List
 
 import lightning as L
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from lightning.callbacks import ModelCheckpoint
-from lightning.loggers import TensorBoardLogger
+from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.loggers import TensorBoardLogger
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
 
-from hungarian_net.dataset import HungarianDataset
-from hungarian_net.models import HNetGRU
-
-
-class HNetGRULightning(L.LightningModule):
-    def __init__(self, max_len, sample_range_used, class_imbalance):
-        super().__init__()
-        self.model = HNetGRU(max_len=max_len)
-        self.criterion1 = nn.BCEWithLogitsLoss(reduction="sum")
-        self.criterion2 = nn.BCEWithLogitsLoss(reduction="sum")
-        self.criterion3 = nn.BCEWithLogitsLoss(reduction="sum")
-        self.criterion_wts = [1.0, 1.0, 1.0]
-        self.sample_range_used = sample_range_used
-        self.class_imbalance = class_imbalance
-
-    def forward(self, x):
-        return self.model(x)
-
-    def training_step(self, batch, batch_idx):
-        data, target = batch
-        output1, output2, output3 = self(data)
-        l1 = self.criterion1(output1, target[0])
-        l2 = self.criterion2(output2, target[1])
-        l3 = self.criterion3(output3, target[2])
-        loss = sum(w * l for w, l in zip(self.criterion_wts, [l1, l2, l3]))
-        self.log("train_loss", loss)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        data, target = batch
-        output1, output2, output3 = self(data)
-        l1 = self.criterion1(output1, target[0])
-        l2 = self.criterion2(output2, target[1])
-        l3 = self.criterion3(output3, target[2])
-        loss = sum(w * l for w, l in zip(self.criterion_wts, [l1, l2, l3]))
-        self.log("val_loss", loss)
-        # Calculate F1 Score or other metrics here
-        return loss
-
-    def configure_optimizers(self):
-        return optim.Adam(self.parameters())
+from hungarian_net.dataset import HungarianDataModule, HungarianDataset
+from hungarian_net.models import HNetGRULightning
 
 
 # @hydra.main(
@@ -150,37 +113,40 @@ def main(
     # TODO: Réécriture/factorisation du code sur le modèle de VibraVox de Julien HAURET
     # TODO: leverager TensorBoard, Hydra, Pytorch Lightning, RayTune, Docker
 
-    # load training dataset
-    train_dataset = HungarianDataset(
-        train=True, max_len=max_len, filename=filename_train
-    )
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True
-    )
+    # Temporarly mock the dataloader
+    filename_train = "data/20241202/train/hung_data_train_DOA2_3000-5000-15000"
+    filename_test = "data/20241202/test/hung_data_test_DOA2_3000-5000-15000"
 
-    f_score_weights = np.tile(train_dataset.get_f_wts(), batch_size)
-    print(train_dataset.get_f_wts())
-
-    # Compute class imbalance
-    class_imbalance = train_dataset.compute_class_imbalance()
-    print("Class imbalance in training labels:", class_imbalance)
-
-    # load validation dataset
-    test_loader = DataLoader(
-        HungarianDataset(train=False, max_len=max_len, filename=filename_test),
-        batch_size=batch_size,
-        shuffle=True,
-        drop_last=True,
-    )
-
-    model = HNetGRULightning(
+    lightning_datamodule = HungarianDataModule(
+        train_filename=filename_train,
+        test_filename=filename_test,
         max_len=max_len,
-        sample_range_used=sample_range_used,
-        class_imbalance=class_imbalance,
+        batch_size=batch_size,
+        num_workers=4,
     )
 
-    logger = TensorBoardLogger("tb_logs", name="hnet_model")
-    checkpoint_callback = ModelCheckpoint(monitor="val_loss", save_top_k=1, mode="min")
+    use_cuda = torch.cuda.is_available()
+    lightning_module = HNetGRULightning(
+        device=torch.device("cuda" if use_cuda else "cpu"), max_len=max_len
+    )
+
+    # Get current date
+    current_date = datetime.datetime.now().strftime("%Y%m%d")
+
+    os.makedirs(f"models/{current_date}", exist_ok=True)
+
+    # Human-readable filename
+    dirpath = f"models/{current_date}/"
+    out_filename = f"hnet_model_DOA{max_len}_{'-'.join(map(str, sample_range_used))}"
+
+    logger = TensorBoardLogger("tb_logs", name="hungarian_net")
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=dirpath,
+        filename=out_filename,
+        monitor="val_loss",
+        save_top_k=1,
+        mode="min",
+    )
 
     trainer = L.Trainer(
         max_epochs=nb_epochs,
@@ -189,7 +155,7 @@ def main(
         # gpus=1 if use_cuda else 0
     )
 
-    trainer.fit(model, train_loader, test_loader)
+    trainer.fit(lightning_module, datamodule=lightning_datamodule)
 
 
 def set_seed(seed=42):
@@ -230,5 +196,5 @@ def setup_environment():
 
 
 if __name__ == "__main__":
-    setup_environment()
+    device = setup_environment()
     main()
