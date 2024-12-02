@@ -150,13 +150,6 @@ def main(
     # TODO: Réécriture/factorisation du code sur le modèle de VibraVox de Julien HAURET
     # TODO: leverager TensorBoard, Hydra, Pytorch Lightning, RayTune, Docker
 
-    set_seed()
-
-    # Check wether to run on cpu or gpu
-    use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
-    print("Using device:", device)
-
     # load training dataset
     train_dataset = HungarianDataset(
         train=True, max_len=max_len, filename=filename_train
@@ -200,14 +193,42 @@ def main(
 
 
 def set_seed(seed=42):
+    L.seed_everything(seed, workers=True)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+
+
+def setup_environment():
+    """
+    Setup environment for training.
+
+    """
+    # Set Random Seed
+    set_seed()
+
+    # Check wether to run on cpu or gpu
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
+    print("Using device:", device)
+
+    warnings.filterwarnings("ignore")
+
+    # Set environment variables for full trace of errors
+    os.environ["HYDRA_FULL_ERROR"] = "1"
+
+    # Enable CUDNN backend
+    torch.backends.cudnn.enabled = True
+
+    # Enable CUDNN benchmarking to choose the best algorithm for every new input size
+    # e.g. for convolutional layers chose between Winograd, GEMM-based, or FFT algorithms
+    torch.backends.cudnn.benchmark = True
+
+    return device
 
 
 if __name__ == "__main__":
+    setup_environment()
     main()
