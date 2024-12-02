@@ -125,9 +125,15 @@ def main(
         num_workers=4,
     )
 
+    # metrics: MetricCollection = MetricCollection(
+    #    dict(hydra.utils.instantiate(cfg.metrics))
+    # )
+
     use_cuda = torch.cuda.is_available()
     lightning_module = HNetGRULightning(
-        device=torch.device("cuda" if use_cuda else "cpu"), max_len=max_len
+        metrics=None,
+        device=torch.device("cuda" if use_cuda else "cpu"),
+        max_len=max_len,
     )
 
     # Get current date
@@ -143,7 +149,7 @@ def main(
     checkpoint_callback = ModelCheckpoint(
         dirpath=dirpath,
         filename=out_filename,
-        monitor="val_loss",
+        monitor="validation_loss",
         save_top_k=1,
         mode="min",
     )
