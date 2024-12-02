@@ -9,6 +9,7 @@ from lightning.pytorch.utilities.types import STEP_OUTPUT
 from sklearn.metrics import f1_score
 from torch import optim
 from torchmetrics import MetricCollection
+
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
 

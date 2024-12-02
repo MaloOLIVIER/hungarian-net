@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+
 from hungarian_net.torch_modules.attention_layer import AttentionLayer
+
 
 class HNetGRU(nn.Module):
     def __init__(self, max_len=4, hidden_size=128):

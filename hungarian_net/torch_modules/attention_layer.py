@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class AttentionLayer(nn.Module):
     def __init__(self, in_channels, out_channels, key_channels):
         super(AttentionLayer, self).__init__()
