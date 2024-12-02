@@ -1,0 +1,9 @@
+checkpoint:
+  _target_: lightning.pytorch.callbacks.ModelCheckpoint
+  save_last: True # additionally, always save model from last epoch
+  verbose: False
+  dirpath: "checkpoints/${now:%Y%m%d}/"
+  filename: "epoch_{epoch:01d}" #"hnet_model_DOA{max_len}_{'-'.join(map(str, sample_range_used))}_epoch_{epoch:01d}"
+  monitor: "validation_loss"
+  save_top_k: 1
+  mode: "min"

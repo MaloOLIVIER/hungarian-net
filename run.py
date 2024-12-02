@@ -14,19 +14,19 @@ from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDa
 from hungarian_net.lightning_modules.hnet_gru_lightning import HNetGRULightning
 
 
-# @hydra.main(
-#     config_path="configs",
-#     config_name="run.yaml",
-#     version_base="1.3",
-# )
-def main(
-    batch_size=256,
+ @hydra.main(
+     config_path="configs",
+     config_name="run.yaml",
+     version_base="1.3",
+ )
+def main(cfg: DictConfig):
+    """ batch_size=256,
     nb_epochs=1000,
     max_len=2,
     sample_range_used=[3000, 5000, 15000],
     filename_train="data/reference/hung_data_train",
-    filename_test="data/reference/hung_data_test",
-):
+    filename_test="data/reference/hung_data_test", """
+
     
 
     # TODO: Réécriture/factorisation du code sur le modèle de VibraVox de Julien HAURET
@@ -55,29 +55,34 @@ def main(
         max_len=max_len,
     )
 
+    # Instantiate LightningModule
+    lightning_module: LightningModule = hydra.utils.instantiate(
+        cfg.lightning_module,
+        metrics=metrics,
+    )
+
     # Get current date
     current_date = datetime.datetime.now().strftime("%Y%m%d")
 
-    os.makedirs(f"models/{current_date}", exist_ok=True)
+    os.makedirs(f"checkpoints/{current_date}", exist_ok=True)
 
     # Human-readable filename
-    dirpath = f"models/{current_date}/"
+    dirpath = f"checkpoints/{current_date}/"
     out_filename = f"hnet_model_DOA{max_len}_{'-'.join(map(str, sample_range_used))}"
 
-    logger = TensorBoardLogger("tb_logs", name="hungarian_net")
-    checkpoint_callback = ModelCheckpoint(
+    """ checkpoint_callback = ModelCheckpoint(
         dirpath=dirpath,
         filename=out_filename,
         monitor="validation_loss",
         save_top_k=1,
         mode="min",
-    )
+    ) """
 
-    trainer = L.Trainer(
-        max_epochs=nb_epochs,
-        logger=logger,
-        callbacks=[checkpoint_callback],
-        # gpus=1 if use_cuda else 0
+    # Instantiate Trainer
+    callbacks: List[Callback] = list(hydra.utils.instantiate(cfg.callbacks).values())
+    logger: Logger = hydra.utils.instantiate(cfg.logging.logger)
+    trainer: Trainer = hydra.utils.instantiate(
+        cfg.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
     )
 
     trainer.fit(lightning_module, datamodule=lightning_datamodule)
