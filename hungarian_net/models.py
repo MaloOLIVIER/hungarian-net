@@ -121,7 +121,9 @@ class HNetGRULightning(L.LightningModule):
 
         return outputs
 
-    def test_step(self, batch: Dict[str, torch.Tensor], batch_idx) -> Dict[str, torch.Tensor]:
+    def test_step(
+        self, batch: Dict[str, torch.Tensor], batch_idx
+    ) -> Dict[str, torch.Tensor]:
         """
         Lightning test step.
 
@@ -157,10 +159,7 @@ class HNetGRULightning(L.LightningModule):
         # 1. Reset test metrics
         self.f1.reset()
 
-        # 2. Log test configurations
-        self.logger.log_dict({"test_config": self.hparams})
-
-        # 3. Disable certain training-specific settings
+        # 2. Disable certain training-specific settings
         self.model.eval()
 
     def on_train_batch_end(
