@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import lightning as L
 import torch
@@ -12,11 +12,26 @@ from torchmetrics import MetricCollection
 
 
 class HNetGRULightning(L.LightningModule):
-    """ """
+    """
+    HNetGRULightning is a PyTorch Lightning module that encapsulates the HunNet GRU model,
+    loss functions, optimizers, and evaluation metrics for training, validation, and testing.
+
+    **Attributes:**
+        model (HNetGRU): The GRU-based neural network model.
+        criterion1 (nn.BCEWithLogitsLoss): Loss function for the first output.
+        criterion2 (nn.BCEWithLogitsLoss): Loss function for the second output.
+        criterion3 (nn.BCEWithLogitsLoss): Loss function for the third output.
+        criterion_wts (List[float]): Weights for combining multiple loss components.
+        optimizer (torch.optim.Optimizer): Optimizer for model training.
+        train_f1 (torchmetrics.F1Score): F1 Score metric for training.
+        val_f1 (torchmetrics.F1Score): F1 Score metric for validation.
+        test_f1 (torchmetrics.F1Score): F1 Score metric for testing.
+    """
 
     def __init__(
         self,
         device,
+        metrics: MetricCollection,
         max_len: int = 2,
         optimizer: partial[torch.optim.Optimizer] = partial(optim.Adam),
     ):
@@ -33,26 +48,26 @@ class HNetGRULightning(L.LightningModule):
             params=self.model.parameters()
         )
 
-        self.train_f1 = torchmetrics.F1Score(
+        self.f1 = torchmetrics.F1Score(
             task="multiclass",
-            num_classes=2,
-            average="weighted",
-            zero_division=1,
-        ).to(self._device)
-        self.val_f1 = torchmetrics.F1Score(
-            task="multiclass",
-            num_classes=2,
-            average="weighted",
-            zero_division=1,
-        ).to(self._device)
-        self.test_f1 = torchmetrics.F1Score(
-            task="multiclass",
-            num_classes=2,
+            num_classes=max_len,
             average="weighted",
             zero_division=1,
         ).to(self._device)
 
-    def common_step(self, batch, batch_idx):
+    def common_step(
+        self, batch, batch_idx
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Performs a forward pass and computes the loss.
+
+        Args:
+            batch (Dict[str, torch.Tensor]): Batch data containing inputs and targets.
+            batch_idx (int): Index of the batch.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: Loss, model outputs, and targets.
+        """
         data, target = batch
         data = data.to(self._device).float()
 
@@ -70,81 +85,124 @@ class HNetGRULightning(L.LightningModule):
 
         return loss, output, target
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx) -> Dict[str, torch.Tensor]:
         """
-        Lightning training step
+        Lightning training step.
 
         Args:
-            batch (Dict[str, torch.Tensor]): Dict with keys "audio", "phonemes_ids", "phonemes_str"
+            batch (Dict[str, torch.Tensor]): Batch data containing inputs and targets.
+            batch_idx (int): Index of the batch.
+
+        Returns:
+            torch.Tensor: Training loss.
         """
 
-        train_loss, output, target = self.common_step(batch, batch_idx)
+        loss, output, target = self.common_step(batch, batch_idx)
 
-        preds = torch.sigmoid(output[0]) > 0.5
+        outputs = {"loss": loss, "output": output, "target": target}
 
-        train_f1 = self.train_f1(preds, target[0])
+        return outputs
 
-        # Log loss and F1-score
-        self.log("train_loss", train_loss, on_step=False, on_epoch=True, prog_bar=False)
-        self.log("train_f1", train_f1, on_step=False, on_epoch=True, prog_bar=False)
-
-        return train_loss
-
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx) -> Dict[str, torch.Tensor]:
         """
-        Lightning validation step
+        Lightning validation step.
 
         Args:
-            batch (Dict[str, torch.Tensor]): Dict with keys "audio", "phonemes_ids", "phonemes_str"
+            batch (Dict[str, torch.Tensor]): Batch data containing inputs and targets.
+            batch_idx (int): Index of the batch.
+
+        Returns:
+            torch.Tensor: Validation loss.
         """
 
-        val_loss, output, target = self.common_step(batch, batch_idx)
+        loss, output, target = self.common_step(batch, batch_idx)
 
-        preds = torch.sigmoid(output[0]) > 0.5
-        val_f1 = self.val_f1(preds, target[0])
+        outputs = {"loss": loss, "output": output, "target": target}
 
-        # Log loss and F1-score
-        self.log("val_loss", val_loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val_f1", val_f1, on_step=False, on_epoch=True, prog_bar=True)
+        return outputs
 
-        return val_loss
-
-    def test_step(self, batch: Dict[str, torch.Tensor], batch_idx):
+    def test_step(self, batch: Dict[str, torch.Tensor], batch_idx) -> Dict[str, torch.Tensor]:
         """
-        Lightning test step
+        Lightning test step.
 
         Args:
-            batch (Dict[str, torch.Tensor]): Dict with keys "audio", "phonemes_ids", "phonemes_str"
+            batch (Dict[str, torch.Tensor]): Batch data containing inputs and targets.
+            batch_idx (int): Index of the batch.
+
+        Returns:
+            torch.Tensor: Test loss.
         """
-        test_loss, output, target = self.common_step(batch, batch_idx)
+        loss, output, target = self.common_step(batch, batch_idx)
 
-        preds = torch.sigmoid(output[0]) > 0.5
-        test_f1 = self.test_f1(preds, target[0])
+        outputs = {"loss": loss, "output": output, "target": target}
 
-        # Log loss and F1-score
-        self.log("test_loss", test_loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("test_f1", test_f1, on_step=False, on_epoch=True, prog_bar=True)
+        return outputs
 
-        return test_loss
-
-        return self.common_step(batch, batch_idx)
-
-        # def on_fit_start(self) -> None:
+    def on_fit_start(self) -> None:
         """
         Called at the beginning of the fit loop.
 
-        - Checks the consistency of the DataModule's parameters
         """
-        #    self.check_datamodule_parameter()
+        # 1. Initialize or reset metrics
+        self.f1.reset()
 
-        # def on_test_start(self) -> None:
+        # 2. Log hyperparameters
+        self.logger.log_hyperparams(self.hparams)
+
+    def on_test_start(self) -> None:
         """
         Called at the beginning of the testing loop.
 
-        - Checks the consistency of the DataModule's parameters
+        """
+        # 1. Reset test metrics
+        self.f1.reset()
+
+        # 2. Log test configurations
+        self.logger.log_dict({"test_config": self.hparams})
+
+        # 3. Disable certain training-specific settings
+        self.model.eval()
+
+    def on_train_batch_end(
+        self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int
+    ) -> None:
+        """
+        Method automatically called when the train batch ends.
+
+        Args:
+            outputs (STEP_OUTPUT): Output of the training_step method
+            batch (Any): Batch
+            batch_idx (int): Index of the batch
         """
 
-    #    self.check_datamodule_parameter()
+        self.common_logging("train", outputs, batch, batch_idx)
+
+    def on_validation_batch_end(
+        self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int = 0
+    ) -> None:
+        """
+        Method automatically called when the validation batch ends.
+
+        Args:
+            outputs (STEP_OUTPUT): Output of the validation_step method
+            batch (Any): Batch
+            batch_idx (int): Index of the batch
+        """
+
+        self.common_logging("validation", outputs, batch, batch_idx)
+
+    def on_test_batch_end(
+        self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int = 0
+    ) -> None:
+        """
+        Method automatically called when the test batch ends.
+
+        Args:
+            outputs (STEP_OUTPUT): Output of the test_step method
+            batch (Any): Batch
+            batch_idx (int): Index of the batch
+        """
+        self.common_logging("test", outputs, batch, batch_idx)
 
     def configure_optimizers(self):
         """
@@ -157,22 +215,30 @@ class HNetGRULightning(L.LightningModule):
 
         return self.optimizer
 
-        # def common_logging(
-        # self, stage: str, outputs: STEP_OUTPUT, batch: Any, batch_idx: int
-        # ) -> None:
+    def common_logging(
+        self, stage: str, outputs: STEP_OUTPUT, batch: Any, batch_idx: int
+    ) -> None:
         """
         Common logging for training, validation and test steps.
 
         Args:
             stage(str): Stage of the training
             outputs(STEP_OUTPUT): Output of the {train,validation,test}_step method
-            batch (Dict[str, torch.Tensor]): Dict with keys "audio", "phonemes_ids", "phonemes_str"
+            batch(Any): Batch
             batch_idx(int): Index of the batch
 
         """
+        loss, output, target = outputs["loss"], outputs["output"], outputs["target"]
 
         # Log loss
-        # self.log(f"{stage}/loss", outputs["loss"], sync_dist=True)
+        self.log(f"{stage}_loss", loss, sync_dist=True)
+
+        preds = torch.sigmoid(output[0]) > 0.5
+
+        f1 = self.f1(preds, target[0])
+
+        # F1-score
+        self.log(f"{stage}_f1", f1, on_step=False, on_epoch=True, prog_bar=False)
 
         # Log metrics
         # predicted_phonemes = self.get_phonemes_from_logits(outputs["logits"])
