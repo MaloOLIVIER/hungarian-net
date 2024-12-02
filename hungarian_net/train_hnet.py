@@ -163,6 +163,8 @@ def main(
 
     trainer.fit(lightning_module, datamodule=lightning_datamodule)
 
+    trainer.test(ckpt_path="best", datamodule=lightning_datamodule)
+
 
 def set_seed(seed=42):
     L.seed_everything(seed, workers=True)
