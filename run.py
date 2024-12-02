@@ -16,8 +16,8 @@ from lightning.pytorch.loggers import TensorBoardLogger
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader
 
-from hungarian_net.dataset import HungarianDataModule, HungarianDataset
-from hungarian_net.models import HNetGRULightning
+from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataModule, HungarianDataset
+from hungarian_net.lightning_modules.hnet_gru_lightning import HNetGRULightning
 
 
 # @hydra.main(

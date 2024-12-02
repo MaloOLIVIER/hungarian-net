@@ -3,7 +3,8 @@ import random
 import matplotlib.pyplot as plot
 import torch
 from IPython import embed
-from train_hnet import HNetGRU, HungarianDataset
+from hungarian_net.lightning_datamodules import HungarianDataset
+from hungarian_net.torch_modules import HNetGRU
 
 use_cuda = False
 max_len = 2
