@@ -1,14 +1,5 @@
-from functools import partial
-from typing import Any, Dict, Tuple
-
-import lightning as L
 import torch
 import torch.nn as nn
-import torchmetrics
-from lightning.pytorch.utilities.types import STEP_OUTPUT
-from sklearn.metrics import f1_score
-from torch import optim
-from torchmetrics import MetricCollection
 from hungarian_net.torch_modules.attention_layer import AttentionLayer
 
 class HNetGRU(nn.Module):

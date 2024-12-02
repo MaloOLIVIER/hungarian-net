@@ -1,10 +1,7 @@
 import datetime
 import os
 import random
-import sys
-import time
 import warnings
-from typing import List
 
 import lightning as L
 import numpy as np
