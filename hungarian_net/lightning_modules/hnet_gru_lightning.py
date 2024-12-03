@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import torchmetrics
 from lightning.pytorch.utilities.types import STEP_OUTPUT
-from sklearn.metrics import f1_score
 from torch import optim
 from torchmetrics import MetricCollection
 
@@ -35,7 +34,7 @@ class HNetGRULightning(L.LightningModule):
         device,
         metrics: MetricCollection,
         max_len: int = 2,
-        optimizer: partial[torch.optim.Optimizer] = partial(optim.Adam),
+        optimizer: partial[optim.Optimizer] = partial(optim.Adam),
     ):
         super().__init__()
         self._device = device
@@ -50,12 +49,7 @@ class HNetGRULightning(L.LightningModule):
             params=self.model.parameters()
         )
 
-        self.f1 = torchmetrics.F1Score(
-            task="multiclass",
-            num_classes=max_len,
-            average="weighted",
-            zero_division=1,
-        ).to(self._device)
+        self.metrics: MetricCollection = metrics
 
     def common_step(
         self, batch, batch_idx
@@ -148,7 +142,7 @@ class HNetGRULightning(L.LightningModule):
 
         """
         # 1. Initialize or reset metrics
-        self.f1.reset()
+        self.metrics.reset()
 
         # 2. Log hyperparameters
         self.logger.log_hyperparams(self.hparams)
@@ -159,7 +153,7 @@ class HNetGRULightning(L.LightningModule):
 
         """
         # 1. Reset test metrics
-        self.f1.reset()
+        self.metrics.reset()
 
         # 2. Disable certain training-specific settings
         self.model.eval()
@@ -236,7 +230,8 @@ class HNetGRULightning(L.LightningModule):
 
         preds = torch.sigmoid(output[0]) > 0.5
 
-        f1 = self.f1(preds, target[0])
+        metrics_to_log = self.metrics(preds, target[0])
+        metrics_to_log = {f"{stage}/{k}": v for k, v in metrics_to_log.items()}
 
         # F1-score
-        self.log(f"{stage}_f1", f1, on_step=False, on_epoch=True, prog_bar=False)
+        self.log_dict(dictionary=metrics_to_log, sync_dist=True, prog_bar=True)
