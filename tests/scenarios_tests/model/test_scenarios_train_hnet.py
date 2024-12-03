@@ -2,7 +2,7 @@
 
 import re
 import pytest
-from hungarian_net.train_hnet import main
+from run import main
 
 
 @pytest.mark.scenarios
