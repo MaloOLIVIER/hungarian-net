@@ -12,6 +12,7 @@ from lightning.pytorch.loggers import Logger
 from omegaconf import DictConfig
 from torchmetrics import MetricCollection
 
+
 @hydra.main(
     config_path="configs",
     config_name="run.yaml",
@@ -25,8 +26,8 @@ def main(cfg: DictConfig):
         cfg (DictConfig): Hydra configuration object, passed in by the @hydra.main decorator
     """
 
-    # TODO: leverager TensorBoard, Hydra, Pytorch Lightning, RayTune, Docker
-    
+    # TODO: leverager RayTune, Docker
+
     # Instantiate LightningDataModule
     lightning_datamodule: L.LightningDataModule = hydra.utils.instantiate(
         cfg.lightning_datamodule
@@ -39,7 +40,9 @@ def main(cfg: DictConfig):
     lightning_module: L.LightningModule = hydra.utils.instantiate(
         cfg.lightning_module,
         metrics=metrics,
-        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"), #mock for now #TODO: hide device, supposed to be handled by lightning
+        device=torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        ),  # mock for now #TODO: hide device, supposed to be handled by lightning
     )
 
     # Instantiate Trainer
