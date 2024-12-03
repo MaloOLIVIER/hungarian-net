@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from hungarian_net.generate_hnet_training_data import main
+from generate_hnet_training_data import main
 
 
 @pytest.mark.scenarios

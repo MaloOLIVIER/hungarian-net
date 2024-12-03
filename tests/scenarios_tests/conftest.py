@@ -2,9 +2,7 @@
 
 import numpy as np
 import pytest
-import torch
-
-from hungarian_net.models import HNetGRU
+from hungarian_net.torch_modules.hnet_gru import HNetGRU 
 
 
 @pytest.fixture(params=[2])
