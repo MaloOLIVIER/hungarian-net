@@ -1,4 +1,4 @@
-# tests/scenarios_tests/test_generate_hnet_training_data.py
+# tests/scenarios_tests/generate_hnet_training_data/tests_scenarios_generate_hnet_training_data.py
 
 import numpy as np
 import pytest

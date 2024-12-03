@@ -1,7 +1,8 @@
 # tests/nonregression_tests/conftest.py
 
 import pytest
-from hungarian_net.torch_modules.hnet_gru import HNetGRU 
+
+from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
 
 @pytest.fixture(params=[256])

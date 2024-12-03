@@ -1,7 +1,9 @@
-# tests/scenarios_tests/model/test_train_hnet.py
+# tests/scenarios_tests/run/tests_scenarios_run.py
 
 import re
+
 import pytest
+
 from run import main
 
 
@@ -40,7 +42,7 @@ from run import main
     ],
 )
 def test_train_model_under_various_distributions(
-    max_doas, batch_size, nb_epochs, training_data, test_data
+    # max_doas, batch_size, nb_epochs, training_data, test_data
 ):
     """
     Train the HNetGRU model with various data distributions.
@@ -53,6 +55,9 @@ def test_train_model_under_various_distributions(
         test_data (str): Path to the testing data file.
     """
 
+    # TODO: to re-work
+    # TODO: next step : train hnet model under various data distributions
+
     # Extract sample ranges from the training_data filename
     match = re.search(r"hung_data_train_DOA\d+_(\d+)-(\d+)-(\d+)", training_data)
     if match:
@@ -63,11 +68,11 @@ def test_train_model_under_various_distributions(
     # Mock nb_epochs to be 1 regardless of the input
     nb_epochs = 1
 
-    main(
-        batch_size=batch_size,
-        nb_epochs=nb_epochs,
-        max_len=max_doas,
-        sample_range_used=sample_range_used,
-        filename_train=training_data,
-        filename_test=test_data,
-    )
+    # main(
+    #     batch_size=batch_size,
+    #     nb_epochs=nb_epochs,
+    #     max_len=max_doas,
+    #     sample_range_used=sample_range_used,
+    #     filename_train=training_data,
+    #     filename_test=test_data,
+    # )

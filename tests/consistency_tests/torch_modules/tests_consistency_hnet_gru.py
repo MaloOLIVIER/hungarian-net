@@ -1,16 +1,12 @@
-# tests/consistency_tests/model/test_train_hnet.py
+# tests/consistency_tests/torch_modules/tests_consistency_hnet_gru.py
 
 import pytest
 import torch
-
-from hungarian_net.torch_modules.attention_layer import AttentionLayer
-from hungarian_net.torch_modules.hnet_gru import HNetGRU    
-
-# TODO: maybe rewrite docstrings
+from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
 
 @pytest.mark.consistency
-def test_model_initialization(model, max_doas) -> None:
+def test_HNetGRU_init(model, max_doas) -> None:
     """Test the initialization of the HNetGRU model.
 
     Args:
@@ -25,9 +21,8 @@ def test_model_initialization(model, max_doas) -> None:
         model.max_len == max_doas
     ), f"Expected max_doas {max_doas}, got {model.max_len}"
 
-
 @pytest.mark.consistency
-def test_forward_pass(model, batch_size) -> None:
+def test_HNetGRU_forward(model, batch_size) -> None:
     """Test the forward pass of the HNetGRU model to ensure correct output shapes.
 
     Args:
@@ -56,21 +51,3 @@ def test_forward_pass(model, batch_size) -> None:
         batch_size,
         model.max_len,
     ), f"Expected output3 shape {(batch_size, model.max_len)}, got {output3.shape}"
-
-
-@pytest.mark.consistency
-def test_attention_layer_initialization(attentionLayer) -> None:
-    """Test the initialization of the AttentionLayer.
-
-    Args:
-        attentionLayer (AttentionLayer): The AttentionLayer instance provided by the fixture.
-
-    Returns:
-        None
-    """
-    assert isinstance(
-        attentionLayer, AttentionLayer
-    ), f"AttentionLayer is not an instance of AttentionLayer class, got {attentionLayer.__repr__()}"
-
-
-# TODO: write test for compute_weight_accuracy
