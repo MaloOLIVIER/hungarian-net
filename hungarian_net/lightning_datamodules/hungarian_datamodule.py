@@ -192,7 +192,12 @@ class HungarianDataModule(LightningDataModule):
     """
 
     def __init__(
-        self, train_filename="data/reference/hung_data_train", test_filename="data/reference/hung_data_test", max_len=2, batch_size=256, num_workers=4
+        self,
+        train_filename="data/reference/hung_data_train",
+        test_filename="data/reference/hung_data_test",
+        max_len=2,
+        batch_size=256,
+        num_workers=4,
     ) -> None:
         """
         Initializes the HungarianDataModule.
