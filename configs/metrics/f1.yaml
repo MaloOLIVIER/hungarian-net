@@ -1,0 +1,6 @@
+f1: 
+  _target_: torchmetrics.F1Score
+  task: "multiclass"
+  num_classes: ${max_len}
+  average: "weighted"
+  zero_division: 1
