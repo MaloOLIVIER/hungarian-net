@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.12] # Specify the Python versions you want to test
-        #TODO: upgrade whole project to latest Python version
 
     steps:
     - name: Checkout repository
