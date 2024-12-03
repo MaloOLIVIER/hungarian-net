@@ -16,3 +16,9 @@ htmlcov/
 .vscode/
 .idea/
 .pycharm/
+
+# TensorBoard logs
+tb_logs/
+
+# Checkpoints
+checkpoints/
