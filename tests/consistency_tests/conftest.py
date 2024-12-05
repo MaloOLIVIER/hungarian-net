@@ -52,7 +52,7 @@ def batch_size(request) -> int:
 
 
 @pytest.fixture
-def model(max_doas) -> HNetGRU:
+def hnetgru(max_doas) -> HNetGRU:
     """
     Fixture to initialize and provide an instance of the HNetGRU model.
 
