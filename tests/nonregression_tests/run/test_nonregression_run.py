@@ -1,4 +1,4 @@
-# tests/nonregression_tests/run/tests_nonregression_run.py
+# tests/nonregression_tests/run/test_nonregression_run.py
 
 import os
 

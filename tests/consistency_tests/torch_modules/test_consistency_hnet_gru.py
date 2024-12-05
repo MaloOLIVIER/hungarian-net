@@ -1,4 +1,4 @@
-# tests/consistency_tests/torch_modules/tests_consistency_hnet_gru.py
+# tests/consistency_tests/torch_modules/test_consistency_hnet_gru.py
 
 import pytest
 import torch

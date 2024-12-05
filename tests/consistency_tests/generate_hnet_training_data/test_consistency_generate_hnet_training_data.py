@@ -1,4 +1,4 @@
-# tests/consistency_tests/generate_hnet_training_data/tests_consistency_generate_hnet_training_data.py
+# tests/consistency_tests/generate_hnet_training_data/test_consistency_generate_hnet_training_data.py
 
 import numpy as np
 import pytest

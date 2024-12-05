@@ -1,4 +1,4 @@
-# tests/scenarios_tests/generate_hnet_training_data/tests_scenarios_generate_hnet_training_data.py
+# tests/scenarios_tests/generate_hnet_training_data/test_scenarios_generate_hnet_training_data.py
 
 import numpy as np
 import pytest
@@ -6,7 +6,7 @@ import pytest
 from generate_hnet_training_data import main
 
 
-@pytest.mark.scenarios
+@pytest.mark.scenarios_generate_data
 def test_generate_data_with_various_distributions(sample_range, max_doas):
     """
     Parameterized test to generate data with different sample ranges and verify distributions.

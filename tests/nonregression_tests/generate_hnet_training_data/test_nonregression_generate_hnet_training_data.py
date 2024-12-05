@@ -1,4 +1,4 @@
-# tests/nonregression_tests/generate_hnet_training_data/tests_nonregression_generate_hnet_training_data.py
+# tests/nonregression_tests/generate_hnet_training_data/test_nonregression_generate_hnet_training_data.py
 import pytest
 from pytest_mock import mocker
 

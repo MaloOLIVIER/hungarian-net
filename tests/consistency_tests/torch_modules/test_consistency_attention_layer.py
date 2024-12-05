@@ -1,4 +1,4 @@
-# tests/consistency_tests/torch_modules/tests_consistency_attention_layer.py
+# tests/consistency_tests/torch_modules/test_consistency_attention_layer.py
 import pytest
 
 from hungarian_net.torch_modules.attention_layer import AttentionLayer
