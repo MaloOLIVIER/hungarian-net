@@ -31,8 +31,10 @@ class HNetGRULightning(L.LightningModule):
 
     def __init__(
         self,
-        device,
         metrics: MetricCollection,
+        device: torch.device = torch.device(
+            "cuda" if torch.cuda.is_available() else "cpu"
+        ),
         max_len: int = 2,
         optimizer: partial[optim.Optimizer] = partial(optim.Adam),
     ):

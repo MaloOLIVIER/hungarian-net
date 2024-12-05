@@ -39,10 +39,7 @@ def main(cfg: DictConfig):
     )
     lightning_module: L.LightningModule = hydra.utils.instantiate(
         cfg.lightning_module,
-        metrics=metrics,
-        device=torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        ),  # mock for now #TODO: hide device, supposed to be handled by lightning
+        metrics=metrics
     )
 
     # Instantiate Trainer

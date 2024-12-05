@@ -2,6 +2,7 @@
 
 import pytest
 
+
 @pytest.mark.consistency
 def test_mocked() -> None:
     """Test mocked.
