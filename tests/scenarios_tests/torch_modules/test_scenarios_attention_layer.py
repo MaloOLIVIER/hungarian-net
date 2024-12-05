@@ -2,6 +2,7 @@
 
 import pytest
 
+
 @pytest.mark.scenarios
 def test_mocked() -> None:
     """Test mocked.

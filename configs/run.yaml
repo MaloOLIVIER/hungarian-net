@@ -5,7 +5,7 @@ description: "${hydra:runtime.choices.lightning_datamodule}"
 max_len: 2 # Maximum DoAs to estimate
 num_workers: 4
 batch_size: 256
-nb_epochs: 2
+nb_epochs: 30 # Mocked for testing
 train_filename: "${hydra:runtime.cwd}/data/reference/hung_data_train"
 test_filename: "${hydra:runtime.cwd}/data/reference/hung_data_test"
 sample_range_used: "3000-5000-15000"

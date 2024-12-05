@@ -8,7 +8,7 @@ __pycache__/
 .python-version
 
 # pytests coverage report and cache
-.coverage
+.coverage*
 .pytest_cache/
 htmlcov/
 

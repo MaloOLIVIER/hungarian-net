@@ -2,6 +2,7 @@
 
 import pytest
 
+
 @pytest.mark.nonregression
 def test_mocked() -> None:
     """Test mocked.
