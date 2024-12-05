@@ -1,7 +1,9 @@
 # tests/scenarios_tests/conftest.py
 
+import hydra
 import numpy as np
 import pytest
+from omegaconf import DictConfig, OmegaConf
 
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
@@ -136,3 +138,38 @@ def sample_range(request) -> np.array:
         - [2500, 8000, 8500]  (Custom Mixed Emphasis 2)
     """
     return request.param
+
+
+@pytest.fixture(scope="session")
+def cfg(request) -> DictConfig:
+    """
+    Pytest fixture to initialize Hydra and provide configuration to tests.
+
+    Returns:
+        DictConfig: Hydrated configuration object.
+    """
+    # Initialize Hydra without changing the working directory
+    with hydra.initialize(config_path="../../configs", version_base=None):
+        cfg = hydra.compose(config_name="test_train_hnetgru")
+
+    # Optionally, apply command-line overrides passed after '--'
+    hydra_overrides = request.config.getoption("--hydra-overrides")
+    if hydra_overrides:
+        cfg = OmegaConf.merge(cfg, OmegaConf.from_dotlist(hydra_overrides))
+
+    return cfg
+
+
+def pytest_addoption(parser):
+    """
+    Pytest hook to add custom command-line options for Hydra overrides.
+
+    Args:
+        parser: Pytest parser.
+    """
+    parser.addoption(
+        "--hydra-overrides",
+        action="store",
+        default="",
+        help="List of Hydra overrides. Example: batch_size=256 nb_epochs=10",
+    )

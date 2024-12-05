@@ -1,3 +1,0 @@
-# tests/consistency_tests/lightning_modules/tests_consistency_hnet_gru_lightning.py
-
-import pytest

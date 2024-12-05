@@ -1,10 +1,15 @@
-# tests/scenarios_tests/run/tests_scenarios_run.py
+# tests/scenarios_tests/run/test_scenarios_run.py
 
 import re
 
 import pytest
 
 from run import main
+
+
+@pytest.mark.scenarios
+def test_batch_size(cfg):
+    assert cfg.batch_size == 256
 
 
 @pytest.mark.scenarios
@@ -41,22 +46,11 @@ from run import main
         ),
     ],
 )
-def test_train_model_under_various_distributions(
-    # max_doas, batch_size, nb_epochs, training_data, test_data
-):
+def test_train_hnetgru_under_various_distributions(cfg, training_data, test_data):
     """
     Train the HNetGRU model with various data distributions.
 
-    Args:
-        max_doas (int): Maximum number of Directions of Arrival (DOAs).
-        batch_size (int): Number of samples per training batch.
-        nb_epochs (int): Number of training epochs.
-        training_data (str): Path to the training data file.
-        test_data (str): Path to the testing data file.
     """
-
-    # TODO: to re-work
-    # TODO: next step : train hnet model under various data distributions
 
     # Extract sample ranges from the training_data filename
     match = re.search(r"hung_data_train_DOA\d+_(\d+)-(\d+)-(\d+)", training_data)
@@ -65,14 +59,9 @@ def test_train_model_under_various_distributions(
     else:
         sample_range_used = None  # Default values
 
-    # Mock nb_epochs to be 1 regardless of the input
-    nb_epochs = 1
-
-    # main(
-    #     batch_size=batch_size,
-    #     nb_epochs=nb_epochs,
-    #     max_len=max_doas,
-    #     sample_range_used=sample_range_used,
-    #     filename_train=training_data,
-    #     filename_test=test_data,
-    # )
+    main(
+        cfg,
+        train_filename=training_data,
+        test_filename=test_data,
+        sample_range_used=sample_range_used,
+    )
