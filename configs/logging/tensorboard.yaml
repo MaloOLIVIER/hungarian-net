@@ -4,6 +4,6 @@ logger:
   _target_: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
   save_dir: "${hydra:runtime.cwd}/tb_logs/"
   name: 'trained_on_${sample_range_trained_on}/standard_resolution'
-  version: "hnet_model_DOA${max_len}"
+  version: "hnet_model_DOA${max_len}_${now:%H%M%S}"
   log_graph: False
   default_hp_metric: False
