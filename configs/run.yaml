@@ -30,5 +30,7 @@ defaults:
       - rich_model_summary
   - logging: tensorboard
   - metrics: f1
-  - optimizer: adam
+  - optimizer: 
+    - adam
+    - lr_scheduler
   - _self_ # priority is given to run.yaml for overrides

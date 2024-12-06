@@ -39,6 +39,10 @@ class HNetGRULightning(L.LightningModule):
         optimizer: partial[optim.Optimizer] = partial(optim.Adam),
     ):
         super().__init__()
+        
+        # Automatically save hyperparameters except for non-serializable objects
+        self.save_hyperparameters(ignore=["metrics", "device", "optimizer"])
+        
         self._device = device
         self.model = HNetGRU(max_len=max_len).to(self._device)
 
