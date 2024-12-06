@@ -37,6 +37,13 @@ def batch_size(request) -> int:
     and behavior with various batch sizes. This helps in ensuring that the model scales
     appropriately with different amounts of data processed in each training iteration.
 
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current value of `batch_size` for the test iteration.
+
     Example:
         When used in a test, `batch_size` will sequentially take the values 64, 128, and 256.
     """
@@ -80,7 +87,7 @@ def nb_epochs(request) -> int:
                                   parameters specified in the `params` list.
 
     Returns:
-        int: The current `nb_epochs` for the test iteration.
+        int: The current number of training epochs for the test iteration.
     """
     return request.param
 

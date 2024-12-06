@@ -1,46 +1,48 @@
 # tests/scenarios_tests/run/test_scenarios_run.py
 
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 
 import pytest
 
+
 @pytest.mark.scenarios
+@pytest.mark.scenarios_run
 @pytest.mark.parametrize(
     "training_data, test_data",
     [
         (
-            "data/20241205/train/hung_data_train_DOA2_3000-5000-15000",
-            "data/20241205/test/hung_data_test_DOA2_3000-5000-15000",
+            "data/20241206/train/hung_data_train_DOA2_3000-5000-15000",
+            "data/20241206/test/hung_data_test_DOA2_3000-5000-15000",
         ),
         (
-            "data/20241205/train/hung_data_train_DOA2_5000-5000-5000",
-            "data/20241205/test/hung_data_test_DOA2_5000-5000-5000",
+            "data/20241206/train/hung_data_train_DOA2_5000-5000-5000",
+            "data/20241206/test/hung_data_test_DOA2_5000-5000-5000",
         ),
         (
-            "data/20241205/train/hung_data_train_DOA2_1000-3000-31000",
-            "data/20241205/test/hung_data_test_DOA2_1000-3000-31000",
+            "data/20241206/train/hung_data_train_DOA2_1000-3000-31000",
+            "data/20241206/test/hung_data_test_DOA2_1000-3000-31000",
         ),
         (
-            "data/20241205/train/hung_data_train_DOA2_2600-5000-17000",
-            "data/20241205/test/hung_data_test_DOA2_2600-5000-17000",
+            "data/20241206/train/hung_data_train_DOA2_2600-5000-17000",
+            "data/20241206/test/hung_data_test_DOA2_2600-5000-17000",
         ),
         (
-            "data/20241205/train/hung_data_train_DOA2_6300-4000-1500",
-            "data/20241205/test/hung_data_test_DOA2_6300-4000-1500",
+            "data/20241206/train/hung_data_train_DOA2_6300-4000-1500",
+            "data/20241206/test/hung_data_test_DOA2_6300-4000-1500",
         ),
         (
-            "data/20241205/train/hung_data_train_DOA2_2000-7000-14000",
-            "data/20241205/test/hung_data_test_DOA2_2000-7000-14000",
+            "data/20241206/train/hung_data_train_DOA2_2000-7000-14000",
+            "data/20241206/test/hung_data_test_DOA2_2000-7000-14000",
         ),
         (
-            "data/20241205/train/hung_data_train_DOA2_2500-8000-8500",
-            "data/20241205/test/hung_data_test_DOA2_2500-8000-8500",
+            "data/20241206/train/hung_data_train_DOA2_2500-8000-8500",
+            "data/20241206/test/hung_data_test_DOA2_2500-8000-8500",
         ),
     ],
 )
-def test_train_hnetgru_under_various_distributions(training_data, test_data):
+def test_run_under_various_distributions(training_data, test_data):
     """
     Train the HNetGRU model with various data distributions.
 

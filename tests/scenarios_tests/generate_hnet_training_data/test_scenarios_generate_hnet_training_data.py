@@ -1,6 +1,5 @@
 # tests/scenarios_tests/generate_hnet_training_data/test_scenarios_generate_hnet_training_data.py
 
-import numpy as np
 import pytest
 
 from generate_hnet_training_data import main

@@ -38,8 +38,7 @@ def main(cfg: DictConfig):
         dict(hydra.utils.instantiate(cfg.metrics))
     )
     lightning_module: L.LightningModule = hydra.utils.instantiate(
-        cfg.lightning_module,
-        metrics=metrics
+        cfg.lightning_module, metrics=metrics
     )
 
     # Instantiate Trainer
