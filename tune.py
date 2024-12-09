@@ -1,7 +1,7 @@
-from functools import partial
 import os
 import random
 import warnings
+from functools import partial
 from typing import List
 
 import hydra
@@ -32,7 +32,7 @@ def main(cfg: DictConfig):
     """
 
     # TODO: leverager RayTune, Docker
-    
+
     # Initialize Ray
     ray.init()
 
@@ -41,7 +41,7 @@ def main(cfg: DictConfig):
         "learning_rate": tune.loguniform(1e-5, 1e-1),
         "batch_size": tune.choice([64, 128, 256]),
     }
-    
+
     # Set up the scheduler and reporter for Ray Tune
     scheduler = ASHAScheduler(
         metric="validation_loss",
@@ -51,9 +51,7 @@ def main(cfg: DictConfig):
         reduction_factor=2,
     )
 
-    reporter = CLIReporter(
-        metric_columns=["validation_loss", "training_iteration"]
-    )
+    reporter = CLIReporter(metric_columns=["validation_loss", "training_iteration"])
 
     # Instantiate LightningDataModule
     lightning_datamodule: L.LightningDataModule = hydra.utils.instantiate(
@@ -66,19 +64,21 @@ def main(cfg: DictConfig):
         dict(hydra.utils.instantiate(cfg.metrics))
     )
     lightning_module: L.LightningModule = hydra.utils.instantiate(
-        cfg.lightning_module, metrics=metrics,
+        cfg.lightning_module,
+        metrics=metrics,
         optimizer=partial(torch.optim.Adam, lr=config["learning_rate"].sample()),
     )
 
     # Instantiate Trainer with Ray Tune callback
-    tune_callback = TuneReportCallback({"validation_loss": "validation_loss"}, on="validation_end")
-    callbacks: List[L.Callback] = list(hydra.utils.instantiate(cfg.callbacks).values()) + [tune_callback]
+    tune_callback = TuneReportCallback(
+        {"validation_loss": "validation_loss"}, on="validation_end"
+    )
+    callbacks: List[L.Callback] = list(
+        hydra.utils.instantiate(cfg.callbacks).values()
+    ) + [tune_callback]
     logger: Logger = hydra.utils.instantiate(cfg.logging.logger)
     trainer: L.Trainer = hydra.utils.instantiate(
-        cfg.trainer,
-        callbacks=callbacks,
-        logger=logger,
-        _convert_="partial"
+        cfg.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
     )
 
     # Define the training function for Ray Tune
@@ -89,17 +89,22 @@ def main(cfg: DictConfig):
     # Run hyperparameter tuning
     result = tune.run(
         train_tune,
-        resources_per_trial={"cpu": cfg.num_workers, "gpu": 1 if torch.cuda.is_available() else 0},
+        resources_per_trial={
+            "cpu": cfg.num_workers,
+            "gpu": 1 if torch.cuda.is_available() else 0,
+        },
         config=config,
         num_samples=10,
         scheduler=scheduler,
         progress_reporter=reporter,
         name="tune_hnet_training",
     )
-    
+
     best_trial = result.get_best_trial("validation_loss", "min", "last")
     print(f"Best trial config: {best_trial.config}")
-    print(f"Best trial final validation loss: {best_trial.last_result['validation_loss']}")
+    print(
+        f"Best trial final validation loss: {best_trial.last_result['validation_loss']}"
+    )
 
     # Shutdown Ray
     ray.shutdown()
