@@ -1,6 +1,13 @@
 f1: 
   _target_: torchmetrics.F1Score
   task: "multiclass"
-  num_classes: ${max_len}
+  num_classes: 2
   average: "weighted"
+  zero_division: 1
+
+f1_unweighted: 
+  _target_: torchmetrics.F1Score
+  task: "multiclass"
+  num_classes: 2
+  average: 'macro'
   zero_division: 1
