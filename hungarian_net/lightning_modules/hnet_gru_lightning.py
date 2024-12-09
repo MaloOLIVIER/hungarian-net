@@ -37,12 +37,13 @@ class HNetGRULightning(L.LightningModule):
         ),
         max_len: int = 2,
         optimizer: partial[optim.Optimizer] = partial(optim.Adam),
+        scheduler: partial[optim.lr_scheduler] = None,
     ):
         super().__init__()
-        
+
         # Automatically save hyperparameters except for non-serializable objects
         self.save_hyperparameters(ignore=["metrics", "device", "optimizer"])
-        
+
         self._device = device
         self.model = HNetGRU(max_len=max_len).to(self._device)
 
@@ -53,6 +54,10 @@ class HNetGRULightning(L.LightningModule):
 
         self.optimizer: torch.optim.Optimizer = optimizer(
             params=self.model.parameters()
+        )
+
+        self.scheduler: optim.lr_scheduler = (
+            scheduler(self.optimizer) if scheduler is not None else None
         )
 
         self.metrics: MetricCollection = metrics
@@ -150,9 +155,6 @@ class HNetGRULightning(L.LightningModule):
         # 1. Initialize or reset metrics
         self.metrics.reset()
 
-        # 2. Log hyperparameters
-        self.logger.log_hyperparams(self.hparams)
-
     def on_test_start(self) -> None:
         """
         Called at the beginning of the testing loop.
@@ -204,6 +206,26 @@ class HNetGRULightning(L.LightningModule):
             batch_idx (int): Index of the batch
         """
         self.common_logging("test", outputs, batch, batch_idx)
+
+    def on_validation_epoch_end(self) -> None:
+        """
+        Called at the end of the validation epoch.
+
+        Retrieves the aggregated validation loss and steps the scheduler.
+        """
+        # Retrieve the validation loss from callback metrics
+        val_loss = self.trainer.callback_metrics.get("validation_loss")
+
+        if val_loss is not None and self.scheduler is not None:
+            # Step the scheduler based on the validation loss
+            (
+                self.scheduler.step(val_loss)
+                if type(self.scheduler) is torch.optim.lr_scheduler.ReduceLROnPlateau
+                else self.scheduler.step()
+            )
+
+            # Log the learning rate
+            self.log("learning_rate", self.optimizer.param_groups[0]["lr"])
 
     def configure_optimizers(self):
         """
