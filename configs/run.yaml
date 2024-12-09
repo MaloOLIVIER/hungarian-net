@@ -6,10 +6,10 @@ max_len: 2 # Maximum DoAs to estimate
 num_workers: 4
 batch_size: 256
 nb_epochs: 30 
-# train_filename: "${hydra:runtime.cwd}/data/20241206/train/coarse_resolution_train_DOA2_3000-5000-15000"
-# test_filename: "${hydra:runtime.cwd}/data/20241206/test/coarse_resolution_test_DOA2_3000-5000-15000"
-train_filename: "${hydra:runtime.cwd}/data/reference/hung_data_train"
-test_filename: "${hydra:runtime.cwd}/data/reference/hung_data_test"
+train_filename: "${hydra:runtime.cwd}/data/20241205/train/hung_data_train_DOA2_3000-5000-15000"
+test_filename: "${hydra:runtime.cwd}/data/20241205/test/hung_data_test_DOA2_3000-5000-15000"
+# train_filename: "${hydra:runtime.cwd}/data/reference/hung_data_train"
+# test_filename: "${hydra:runtime.cwd}/data/reference/hung_data_test"
 sample_range_trained_on: "3000-5000-15000"
 
 # Hydra configuration
@@ -32,5 +32,6 @@ defaults:
   - metrics: f1
   - optimizer: 
     - adam
+  - scheduler:
     - lr_scheduler
   - _self_ # priority is given to run.yaml for overrides
