@@ -2,7 +2,7 @@ checkpoint:
   _target_: lightning.pytorch.callbacks.ModelCheckpoint
   save_last: True # additionally, always save model from last epoch
   verbose: False
-  dirpath: "${hydra:runtime.cwd}/checkpoints/${now:%Y%m%d}/trained_on_${sample_range_trained_on}/standard_resolution/"
+  dirpath: "${hydra:runtime.cwd}/checkpoints/${now:%Y%m%d}/trained_on_${sample_range_trained_on}/${resolution_used}/"
   filename: "hnet_model_DOA${max_len}_{epoch:01d}_${now:%H%M%S}"
   monitor: "validation_loss"
   save_top_k: 1
