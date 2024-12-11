@@ -51,9 +51,9 @@ def test_run_under_various_distributions(training_data, test_data):
     # Extract sample ranges from the training_data filename
     match = re.search(r"hung_data_train_DOA\d+_(\d+)-(\d+)-(\d+)", training_data)
     if match:
-        sample_range_used = "-".join(match.groups())
+        sample_range_trained_on = "-".join(match.groups())
     else:
-        sample_range_used = None  # Default values
+        sample_range_trained_on = None  # Default values
 
     # Get the absolute paths for training and testing data
     current_dir = Path.cwd()
@@ -64,7 +64,7 @@ def test_run_under_various_distributions(training_data, test_data):
     overrides = [
         f"train_filename={train_filename}",
         f"test_filename={test_filename}",
-        f"sample_range_used={sample_range_used}",
+        f"sample_range_trained_on={sample_range_trained_on}",
     ]
 
     os.system(f"python run.py {' '.join(overrides)}")
