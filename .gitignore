@@ -24,3 +24,5 @@ tb_logs/
 checkpoints/
 
 presentation/
+outputs/
+data/
