@@ -42,6 +42,7 @@ def main(cfg: DictConfig):
     # Instantiate Trainer
     callbacks: List[L.Callback] = list(hydra.utils.instantiate(cfg.callbacks).values())
     logger: Logger = hydra.utils.instantiate(cfg.logging.logger)
+    logger.log_hyperparams(cfg)
     trainer: L.Trainer = hydra.utils.instantiate(
         cfg.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
     )

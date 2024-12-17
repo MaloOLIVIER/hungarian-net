@@ -10,6 +10,7 @@ from lightning.pytorch.utilities.types import STEP_OUTPUT
 from torch import optim
 from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassConfusionMatrix
+from aim import Image
 
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
@@ -203,7 +204,7 @@ class HNetGRULightning(L.LightningModule):
         # Log confusion matrix
         fig_, ax_ = self.confusion_matrix.plot()
         
-        self.logger.experiment.add_figure(f"validation/epoch={self.current_epoch}/confusion_matrix", fig_, global_step=self.global_step)
+        self.logger.experiment.track(Image(fig_), name=f"validation/epoch={self.current_epoch}/confusion_matrix", step=self.global_step)
 
     def on_test_batch_end(
         self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int = 0
@@ -228,7 +229,7 @@ class HNetGRULightning(L.LightningModule):
         # Log confusion matrix
         fig_, ax_ = self.confusion_matrix.plot()
         
-        self.logger.experiment.add_figure(f"test/confusion_matrix", fig_, global_step=self.global_step)
+        self.logger.experiment.track(Image(fig_), name=f"test/confusion_matrix", step=self.global_step)
 
     def on_validation_epoch_end(self) -> None:
         """
@@ -288,6 +289,9 @@ class HNetGRULightning(L.LightningModule):
 
         # Log loss
         self.log(f"{stage}_loss", loss, sync_dist=True)
+        
+        # Log epoch
+        self.logger.experiment.track(self.current_epoch, name="epoch", step=self.global_step)
 
         preds = torch.sigmoid(output[0]) > 0.5
 
