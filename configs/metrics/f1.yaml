@@ -1,11 +1,11 @@
 f1: 
-  _target_: torchmetrics.MulticlassF1Score
+  _target_: torchmetrics.classification.MulticlassF1Score
   num_classes: ${max_len} # Maximum DoAs to estimate
-  average: "weighted"
+  average: "weighted" # all classes are weighted
   zero_division: 1
 
 f1_unweighted: 
-  _target_: torchmetrics.MulticlassF1Score
+  _target_: torchmetrics.classification.MulticlassF1Score
   num_classes: ${max_len} # Maximum DoAs to estimate
-  average: 'macro'
+  average: 'macro' # all classes are treated equally
   zero_division: 1
