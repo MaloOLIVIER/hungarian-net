@@ -29,7 +29,7 @@ defaults:
   - callbacks: # Dict of callbacks
       - hnet_checkpoint
       - rich_model_summary
-  - logging: tensorboard
+  - logging: aim
   - metrics: 
     - f1
     - precision

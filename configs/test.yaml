@@ -27,7 +27,7 @@ defaults:
   - trainer: ddp
   - callbacks: # Dict of callbacks
       - rich_model_summary
-  - logging: test_tensorboard
+  - logging: test_aim
   - metrics: f1
   - optimizer: adam
   - _self_ # priority is given to run.yaml for overrides
