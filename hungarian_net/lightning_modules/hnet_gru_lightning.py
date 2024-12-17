@@ -4,10 +4,12 @@ from typing import Any, Dict, Tuple
 import lightning as L
 import torch
 import torch.nn as nn
-import torchmetrics
+import matplotlib
+matplotlib.use('Agg')
 from lightning.pytorch.utilities.types import STEP_OUTPUT
 from torch import optim
 from torchmetrics import MetricCollection
+from torchmetrics.classification import MulticlassConfusionMatrix
 
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
@@ -24,9 +26,6 @@ class HNetGRULightning(L.LightningModule):
         criterion3 (nn.BCEWithLogitsLoss): Loss function for the third output.
         criterion_wts (List[float]): Weights for combining multiple loss components.
         optimizer (torch.optim.Optimizer): Optimizer for model training.
-        train_f1 (torchmetrics.F1Score): F1 Score metric for training.
-        val_f1 (torchmetrics.F1Score): F1 Score metric for validation.
-        test_f1 (torchmetrics.F1Score): F1 Score metric for testing.
     """
 
     def __init__(
@@ -61,6 +60,7 @@ class HNetGRULightning(L.LightningModule):
         )
 
         self.metrics: MetricCollection = metrics
+        self.confusion_matrix = MulticlassConfusionMatrix(num_classes=max_len)
 
     def common_step(
         self, batch, batch_idx
@@ -191,8 +191,19 @@ class HNetGRULightning(L.LightningModule):
             batch (Any): Batch
             batch_idx (int): Index of the batch
         """
+        loss, output, target = outputs["loss"], outputs["output"], outputs["target"]
 
         self.common_logging("validation", outputs, batch, batch_idx)
+        
+        preds = torch.sigmoid(output[0]) > 0.5
+        
+        # confusion matrix
+        self.confusion_matrix.update(preds, target[0])
+        
+        # Log confusion matrix
+        fig_, ax_ = self.confusion_matrix.plot()
+        
+        self.logger.experiment.add_figure(f"validation/epoch={self.current_epoch}/confusion_matrix", fig_, global_step=self.global_step)
 
     def on_test_batch_end(
         self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int, dataloader_idx: int = 0
@@ -205,7 +216,19 @@ class HNetGRULightning(L.LightningModule):
             batch (Any): Batch
             batch_idx (int): Index of the batch
         """
+        loss, output, target = outputs["loss"], outputs["output"], outputs["target"]
+        
         self.common_logging("test", outputs, batch, batch_idx)
+        
+        preds = torch.sigmoid(output[0]) > 0.5
+        
+        # confusion matrix
+        self.confusion_matrix.update(preds, target[0])
+        
+        # Log confusion matrix
+        fig_, ax_ = self.confusion_matrix.plot()
+        
+        self.logger.experiment.add_figure(f"test/confusion_matrix", fig_, global_step=self.global_step)
 
     def on_validation_epoch_end(self) -> None:
         """
@@ -226,6 +249,16 @@ class HNetGRULightning(L.LightningModule):
 
             # Log the learning rate
             self.log("learning_rate", self.optimizer.param_groups[0]["lr"])
+            
+        self.confusion_matrix.reset()
+        
+    def on_test_epoch_end(self) -> None:
+        """
+        Called at the end of the testing epoch.
+
+        Retrieves the aggregated test loss.
+        """
+        self.confusion_matrix.reset()
 
     def configure_optimizers(self):
         """
