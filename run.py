@@ -26,8 +26,6 @@ def main(cfg: DictConfig):
         cfg (DictConfig): Hydra configuration object, passed in by the @hydra.main decorator
     """
 
-    # TODO: leverager RayTune, Docker
-
     # Instantiate LightningDataModule
     lightning_datamodule: L.LightningDataModule = hydra.utils.instantiate(
         cfg.lightning_datamodule
