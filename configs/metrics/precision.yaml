@@ -1,0 +1,11 @@
+precision: 
+  _target_: torchmetrics.classification.MulticlassPrecision
+  num_classes: ${max_len} # Maximum DoAs to estimate
+  average: "weighted" # all classes are weighted
+  zero_division: 1
+
+precision_unweighted: 
+  _target_: torchmetrics.classification.MulticlassPrecision
+  num_classes: ${max_len} # Maximum DoAs to estimate
+  average: 'macro' # all classes are treated equally
+  zero_division: 1
