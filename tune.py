@@ -1,8 +1,9 @@
+# tune.py
 import os
 import random
 import warnings
 from functools import partial
-from typing import List
+from typing import Any, List
 
 import hydra
 import lightning as L
@@ -25,13 +26,32 @@ from torchmetrics import MetricCollection
 )
 def main(cfg: DictConfig):
     """
-    Instantiate all necessary modules, train and test the model.
+    Instantiate all necessary modules, train, and test the Hungarian Network model using Ray Tune for hyperparameter optimization.
+
+    This function sets up the data module, model, metrics, logger, trainer, and Ray Tune's hyperparameter search configurations
+    based on the provided Hydra configuration. It then initiates the Ray Tune hyperparameter tuning process to optimize
+    the model's performance.
 
     Args:
-        cfg (DictConfig): Hydra configuration object, passed in by the @hydra.main decorator
-    """
+        cfg (DictConfig): Hydra configuration object, passed in by the @hydra.main decorator.
+                          Contains all configuration parameters for data loading, model initialization,
+                          hyperparameter search, logging, and more.
 
-    # TODO: leverager RayTune, Docker
+    Workflow:
+        1. Initialize Ray for distributed hyperparameter tuning.
+        2. Define the hyperparameter search space.
+        3. Set up the scheduler (ASHAScheduler) and CLI reporter for Ray Tune.
+        4. Instantiate the LightningDataModule using the configuration and sampled batch size.
+        5. Instantiate the MetricCollection for evaluation metrics.
+        6. Instantiate the LightningModule (HNetGRULightning) with the sampled learning rate.
+        7. Instantiate callbacks, including Ray Tune's TuneReportCallback.
+        8. Instantiate the logger based on the configuration.
+        9. Instantiate the Trainer with callbacks and logger.
+        10. Define the training function to be executed by Ray Tune.
+        11. Run hyperparameter tuning using Ray Tune.
+        12. Retrieve and print the best trial's configuration and validation loss.
+        13. Shutdown Ray after tuning is complete.
+    """
 
     # Initialize Ray
     ray.init()
@@ -82,7 +102,16 @@ def main(cfg: DictConfig):
     )
 
     # Define the training function for Ray Tune
-    def train_tune(config):
+    def train_tune(config: Any) -> None:
+        """
+        Training function to be used by Ray Tune for hyperparameter optimization.
+
+        Args:
+            config (Dict): Dictionary containing hyperparameters to tune.
+
+        Returns:
+            None
+        """
         trainer.fit(lightning_module, datamodule=lightning_datamodule)
         trainer.test(ckpt_path="best", datamodule=lightning_datamodule)
 
@@ -110,7 +139,21 @@ def main(cfg: DictConfig):
     ray.shutdown()
 
 
-def set_seed(seed=42):
+def set_seed(seed: int = 42) -> None:
+    """
+    Sets the random seed for reproducibility across various libraries.
+
+    This function ensures that the results are reproducible by setting the seed for Python's
+    `random` module, NumPy, and PyTorch (both CPU and CUDA). It also configures PyTorch's
+    backend for deterministic behavior.
+
+    Args:
+        seed (int, optional): The seed value to set for all random number generators.
+                              Defaults to 42.
+
+    Returns:
+        None
+    """
     L.seed_everything(seed, workers=True)
     random.seed(seed)
     np.random.seed(seed)
@@ -119,10 +162,20 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
 
 
-def setup_environment():
+def setup_environment() -> torch.device:
     """
-    Setup environment for training.
+    Sets up the environment for training, including seeding and device configuration.
 
+    This function performs the following tasks:
+        1. Sets the random seed for reproducibility.
+        2. Determines whether to use CPU or GPU for training.
+        3. Configures environment variables and PyTorch backend settings to optimize performance.
+
+    Returns:
+        torch.device: The device (CPU or CUDA) that will be used for training.
+
+    Raises:
+        None
     """
     # Set Random Seed
     set_seed()

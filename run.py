@@ -1,4 +1,4 @@
-import datetime
+# run.py
 import os
 import random
 import warnings
@@ -20,12 +20,26 @@ from torchmetrics import MetricCollection
 )
 def main(cfg: DictConfig):
     """
-    Instantiate all necessary modules, train and test the model.
+    Instantiate all necessary modules, train, and test the Hungarian Network model.
+
+    This function sets up the data module, model, metrics, logger, and trainer based on the
+    provided Hydra configuration. It then proceeds to train the model and evaluate it on the
+    test dataset.
 
     Args:
-        cfg (DictConfig): Hydra configuration object, passed in by the @hydra.main decorator
-    """
+        cfg (DictConfig): Hydra configuration object, passed in by the @hydra.main decorator.
+                          Contains all configuration parameters for data loading, model initialization,
+                          training, logging, and more.
 
+    Workflow:
+        1. Instantiate the LightningDataModule using the configuration.
+        2. Instantiate the MetricCollection for evaluation metrics.
+        3. Instantiate the LightningModule (HNetGRULightning) with the metrics.
+        4. Instantiate callbacks and logger based on the configuration.
+        5. Instantiate the Trainer with callbacks and logger.
+        6. Start the training process.
+        7. Evaluate the model on the test dataset using the best checkpoint.
+    """
     # Instantiate LightningDataModule
     lightning_datamodule: L.LightningDataModule = hydra.utils.instantiate(
         cfg.lightning_datamodule
@@ -52,7 +66,21 @@ def main(cfg: DictConfig):
     trainer.test(ckpt_path="best", datamodule=lightning_datamodule)
 
 
-def set_seed(seed=42):
+def set_seed(seed: int = 42) -> None:
+    """
+    Sets the random seed for reproducibility across various libraries.
+
+    This function ensures that the results are reproducible by setting the seed for Python's
+    `random` module, NumPy, and PyTorch (both CPU and CUDA). It also configures PyTorch's
+    backend for deterministic behavior.
+
+    Args:
+        seed (int, optional): The seed value to set for all random number generators.
+                              Defaults to 42.
+
+    Returns:
+        None
+    """
     L.seed_everything(seed, workers=True)
     random.seed(seed)
     np.random.seed(seed)
@@ -61,10 +89,21 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
 
 
-def setup_environment():
+def setup_environment() -> torch.device:
     """
-    Setup environment for training.
+    Sets up the environment for training, including seeding, device configuration,
+    and PyTorch backend settings.
 
+    This function performs the following tasks:
+        1. Sets the random seed for reproducibility.
+        2. Determines whether to use CPU or GPU for training.
+        3. Configures environment variables and PyTorch backend settings to optimize performance.
+
+    Returns:
+        torch.device: The device (CPU or CUDA) that will be used for training.
+
+    Raises:
+        None
     """
     # Set Random Seed
     set_seed()

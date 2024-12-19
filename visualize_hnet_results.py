@@ -1,8 +1,9 @@
+# visualize_hnet_results.py
 import random
 
 import matplotlib.pyplot as plot
 import torch
-from IPython import embed
+
 from hungarian_net.lightning_datamodules import HungarianDataset
 from hungarian_net.torch_modules import HNetGRU
 
