@@ -1,10 +1,21 @@
 # generate_hnet_training_data.py
-
+"""
+@inproceedings{Adavanne_2021,
+title={Differentiable Tracking-Based Training of Deep Learning Sound Source Localizers},
+url={http://dx.doi.org/10.1109/WASPAA52581.2021.9632773},
+DOI={10.1109/waspaa52581.2021.9632773},
+booktitle={2021 IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
+publisher={IEEE},
+author={Adavanne, Sharath and Politis, Archontis and Virtanen, Tuomas},
+year={2021},
+month=oct, pages={211-215} }
+"""
 import datetime
 import os
 import pickle
 import random
 import time
+import typing as tp
 
 import numpy as np
 import torch
@@ -13,13 +24,18 @@ from scipy.spatial import distance
 
 default_sample_range = np.array([3000, 5000, 15000])
 
-def sph2cart(azimuth, elevation, r):
+
+def sph2cart(azimuth: float, elevation: float, r: float) -> np.ndarray:
     """
-    Convert spherical to cartesian coordinates
-    :param azimuth: in radians
-    :param elevation: in radians
-    :param r: in meters
-    :return: cartesian coordinates
+    Converts spherical coordinates to Cartesian coordinates.
+
+    Args:
+        azimuth (float): Azimuth angle in degrees.
+        elevation (float): Elevation angle in degrees.
+        r (float): Radius.
+
+    Returns:
+        np.ndarray: Cartesian coordinates as an array [x, y, z].
     """
     x = r * np.cos(elevation) * np.cos(azimuth)
     y = r * np.cos(elevation) * np.sin(azimuth)
@@ -27,24 +43,58 @@ def sph2cart(azimuth, elevation, r):
     return np.array([x, y, z])
 
 
-def save_obj(obj, name):
+def save_obj(obj: tp.Any, name: str) -> None:
+    """
+    Saves a Python object to a pickle file.
+
+    Args:
+        obj (Any): The Python object to save.
+        name (str): The base name of the file (without extension).
+
+    Returns:
+        None
+    """
     with open(name + ".pkl", "wb") as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
-def load_obj(name):
+def load_obj(name: str) -> tp.Any:
+    """
+    Loads a Python object from a pickle file.
+
+    Args:
+        name (str): The base name of the file (without extension).
+
+    Returns:
+        Any: The loaded Python object.
+    """
     with open(name + ".pkl", "rb") as f:
         return pickle.load(f)
 
 
-def compute_class_imbalance(data_dict):
-    """Computes the number of classes '0' and '1' in the association matrices of the training data.
+def compute_class_imbalance(
+    data_dict: dict[
+        str,
+        list[
+            tp.Union[
+                int,
+                np.ndarray[float],
+                np.ndarray[float],
+                np.ndarray[float],
+                np.ndarray[float],
+                np.ndarray[float],
+            ]
+        ],
+    ]
+) -> dict[float, int]:
+    """
+    Computes the number of classes '0' and '1' in the association matrices of the training data.
 
     Args:
-        data_dict (dict): Dictionary containing the Association matrix.
+        data_dict (dict[str, list[tp.Union[int, np.ndarray[float], np.ndarray[float], np.ndarray[float], np.ndarray[float], np.ndarray[float]]]]): Dictionary containing the Association matrix.
 
     Returns:
-        dict: A dictionary containing the number of classes '0' and '1' in the association matrices.
+        dict[float, int]: A dictionary containing the number of classes '0' and '1' in the association matrices.
     """
     class_counts = {}
     for key, value in data_dict.items():
@@ -59,18 +109,35 @@ def compute_class_imbalance(data_dict):
 
 def generate_data(
     max_doas, sample_range, data_type="train", resolution_range="standard_resolution"
-):
+) -> dict[
+    str,
+    list[
+        tp.Union[
+            int,
+            np.ndarray[float],
+            np.ndarray[float],
+            np.ndarray[float],
+            np.ndarray[float],
+            np.ndarray[float],
+        ]
+    ],
+]:
     """
     Generates training or testing data based on the specified parameters.
 
     Args:
         max_doas (int): Maximum number of Directions of Arrival (DOAs).
-        sample_range (np.array): Array specifying the number of samples for each DOA combination.
+        sample_range (np.ndarray): Array specifying the number of samples for each DOA combination.
+                                   Should correspond to the minimum of `nb_ref` and `nb_pred`.
         data_type (str): Type of data to generate ('train' or 'test').
-        resolution_range (str): Range of angular resolutions to consider : standard_resolution, fine_resolution or coarse_resolution.
+        resolution_range (str): Range of angular resolutions to consider:
+                                 'standard_resolution', 'fine_resolution', or 'coarse_resolution'.
 
     Returns:
-        dict: Generated data dictionary containing association matrices and related information.
+        dict[str, list[tp.Union[int, np.ndarray[float], np.ndarray[float], np.ndarray[float], np.ndarray[float], np.ndarray[float]]]]: Generated data dictionary containing association matrices and related information.
+
+    Raises:
+        ValueError: If `resolution_range` is invalid.
     """
     data_dict = {}
     cnt = 0
@@ -240,7 +307,7 @@ def main(
     max_doas=2,
     resolution_range="standard_resolution",
     testing="default",
-):
+) -> None:
     """
     Generates and saves training and testing datasets for the Hungarian Network (HNet) model.
 
@@ -249,12 +316,16 @@ def main(
     defined sample ranges for different Directions of Arrival (DOAs).
 
     Args:
-        sample_range (np.array, optional): Array specifying the number of samples for each DOA combination.
+        sample_range (np.ndarray, optional): Array specifying the number of samples for each DOA combination.
                                            Should correspond to the minimum of `nb_ref` and `nb_pred`.
                                            Defaults to `default_sample_range`.
         max_doas (int, optional): Maximum number of Directions of Arrival (DOAs) to consider. Defaults to 2.
-        resolution_range (str, optional): Range of angular resolutions to consider : standard_resolution, fine_resolution or coarse_resolution. Defaults to "standard_resolution".
-        testing (str, optional): Which data distribution to test, sample_range or `default_sample_range`. Defaults to "default".
+        resolution_range (str, optional): Range of angular resolutions to consider:
+                                         'standard_resolution', 'fine_resolution', or 'coarse_resolution'.
+                                         Defaults to "standard_resolution".
+        testing (str, optional): Determines the sample range for testing data.
+                                 If not "default", uses the provided `sample_range`; otherwise, uses `default_sample_range`.
+                                 Defaults to "default".
 
     Returns:
         None
@@ -265,13 +336,12 @@ def main(
     Example:
         >>> main()
         Generating Training Data...
-        Saving data in: data/hung_data_train, #examples: 405000
+        Saving data in: data/20231010/train_resolution_train_DOA2_3000-5000-15000, #examples: 405000
         ...
         === Summary of Generated Datasets ===
         Training Data Samples: 405000
         Testing Data Samples: 40500
     """
-
     set_seed()
 
     print("\n=== Generating Hungarian Network Training Data ===")
@@ -305,7 +375,16 @@ def main(
     print(f"Testing Data Samples: {len(test_data_dict)}\n")
 
 
-def set_seed(seed=42):
+def set_seed(seed: int = 42) -> None:
+    """
+    Sets the random seed for reproducibility.
+
+    Args:
+        seed (int, optional): The seed value to set for all random number generators. Defaults to 42.
+
+    Returns:
+        None
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
