@@ -1,3 +1,6 @@
+# hungarian_net/lightning_datamodules/hungarian_datamodule.py
+import typing as tp
+
 import numpy as np
 from lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
@@ -96,7 +99,7 @@ class HungarianDataset(Dataset):
 
         Returns:
             dict[int, int]: A dictionary where keys are class labels and values are the
-                  counts of occurrences of each class.
+                            counts of occurrences of each class.
         """
         class_counts = {}
         for key, value in self.data_dict.items():
@@ -108,7 +111,7 @@ class HungarianDataset(Dataset):
                     class_counts[int(elem)] += 1
         return class_counts
 
-    def __getitem__(self, idx) -> tuple[np.ndarray, list[np.ndarray]]:
+    def __getitem__(self, idx: int) -> tuple[np.ndarray, list[np.ndarray]]:
         """
         Retrieves the features and labels for a given index.
 
@@ -126,7 +129,7 @@ class HungarianDataset(Dataset):
         label = [label.reshape(-1), label.sum(-1), label.sum(-2)]
         return feat, label
 
-    def compute_weighted_accuracy(self, n1star, n0star) -> float:
+    def compute_weighted_accuracy(self, n1star: int, n0star: int) -> float:
         """
         Compute the weighted accuracy of the model.
         The weighted accuracy is calculated based on the class imbalance in the dataset.
@@ -170,12 +173,12 @@ class HungarianDataModule(LightningDataModule):
     and configuring DataLoaders for training, validation, and testing.
 
     Args:
-        train_filename (str): Path to the training data Pickle file.
-                              Defaults to "data/reference/hung_data_train".
-        test_filename (str): Path to the testing data Pickle file.
-                             Defaults to "data/reference/hung_data_test".
+        train_filename (str, optional): Path to the training data Pickle file.
+                                        Defaults to "data/reference/hung_data_train".
+        test_filename (str, optional): Path to the testing data Pickle file.
+                                       Defaults to "data/reference/hung_data_test".
         max_doas (int, optional): Maximum number of DOAs. Determines the size of the
-                                 distance and association matrices. Defaults to `2`.
+                                   distance and association matrices. Defaults to `2`.
         batch_size (int, optional): Number of samples per batch. Defaults to `256`.
         num_workers (int, optional): Number of subprocesses to use for data loading.
                                      More workers can speed up data loading. Defaults to `4`.
@@ -199,11 +202,6 @@ class HungarianDataModule(LightningDataModule):
         batch_size=256,
         num_workers=4,
     ) -> None:
-        """
-        Initializes the HungarianDataModule.
-
-        Sets up the filenames, maximum DOAs, batch size, and number of workers.
-        """
         super().__init__()
         self.train_filename = train_filename
         self.test_filename = test_filename
@@ -211,9 +209,9 @@ class HungarianDataModule(LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-    # def transfer_batch_to_device(self, batch, device, dataloader_idx):
+    # TODO: def transfer_batch_to_device(self, batch, device, dataloader_idx):
 
-    def setup(self, stage=None) -> None:
+    def setup(self, stage: tp.Optional[str] = None) -> None:
         """
         Prepares the datasets for training, validation, and testing.
 
