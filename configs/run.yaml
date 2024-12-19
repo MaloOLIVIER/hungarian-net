@@ -2,7 +2,7 @@
 
 # Top-level variables available in all config files
 description: "${hydra:runtime.choices.lightning_datamodule}"
-max_len: 2 # Maximum DoAs to estimate
+max_doas: 2 # Maximum DoAs to estimate
 num_workers: 4
 batch_size: 256
 nb_epochs: 30

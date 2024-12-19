@@ -2,7 +2,7 @@ _target_: hungarian_net.lightning_datamodules.hungarian_datamodule.HungarianData
 # _partial_: true
 train_filename: ${train_filename}
 test_filename: ${test_filename}
-max_len: ${max_len}
+max_doas: ${max_doas}
 batch_size: ${batch_size}
 num_workers: ${num_workers}
     

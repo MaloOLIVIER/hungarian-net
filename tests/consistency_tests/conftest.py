@@ -68,10 +68,10 @@ def hnetgru(max_doas) -> HNetGRU:
         HNetGRU: An initialized instance of the `HNetGRU` model configured with the specified `max_doas`.
 
     Example:
-        When used in a test, `model` will be an instance of `HNetGRU` with `max_len` set to values
+        When used in a test, `model` will be an instance of `HNetGRU` with `max_doas` set to values
         2, 4, and 8 across different test iterations.
     """
-    return HNetGRU(max_len=max_doas)
+    return HNetGRU(max_doas=max_doas)
 
 
 @pytest.fixture(params=[128])

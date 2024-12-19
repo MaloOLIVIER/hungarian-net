@@ -16,19 +16,19 @@ class HungarianDataset(Dataset):
     Args:
         train (bool, optional): Flag indicating whether to load training data (`True`) or
                                  testing data (`False`). Defaults to `True`.
-        max_len (int, optional): Maximum number of DOAs. Determines the size of the
+        max_doas (int, optional): Maximum number of DOAs. Determines the size of the
                                  distance and association matrices. Defaults to `None`.
         filename (str, optional): Path to the Pickle file containing the serialized data.
                                   Defaults to `None`.
 
     Attributes:
         data_dict (dict): Dictionary containing the loaded data samples.
-        max_len (int): Maximum number of DOAs.
+        max_doas (int): Maximum number of DOAs.
         pos_wts (np.ndarray): Weights for position calculations based on class imbalance.
         f_scr_wts (np.ndarray): Weights for feature scores based on class imbalance.
     """
 
-    def __init__(self, train=True, max_len=None, filename=None) -> None:
+    def __init__(self, train=True, max_doas=None, filename=None) -> None:
         """
         Initializes the HungarianDataset.
 
@@ -38,7 +38,7 @@ class HungarianDataset(Dataset):
         Args:
             train (bool, optional): If `True`, loads training data; otherwise, loads testing data.
                                      Defaults to `True`.
-            max_len (int, optional): Maximum number of DOAs. Defaults to `None`.
+            max_doas (int, optional): Maximum number of DOAs. Defaults to `None`.
             filename (str, optional): Path to the Pickle file containing the data. Defaults to `None`.
 
         Raises:
@@ -48,12 +48,12 @@ class HungarianDataset(Dataset):
             self.data_dict = load_obj(filename)
         else:
             self.data_dict = load_obj(filename)
-        self.max_len = max_len
+        self.max_doas = max_doas
 
-        self.pos_wts = np.ones(self.max_len**2)
-        self.f_scr_wts = np.ones(self.max_len**2)
+        self.pos_wts = np.ones(self.max_doas**2)
+        self.f_scr_wts = np.ones(self.max_doas**2)
         if train:
-            loc_wts = np.zeros(self.max_len**2)
+            loc_wts = np.zeros(self.max_doas**2)
             for i in range(len(self.data_dict)):
                 label = self.data_dict[i][3]
                 loc_wts += label.reshape(-1)
@@ -174,7 +174,7 @@ class HungarianDataModule(LightningDataModule):
                               Defaults to "data/reference/hung_data_train".
         test_filename (str): Path to the testing data Pickle file.
                              Defaults to "data/reference/hung_data_test".
-        max_len (int, optional): Maximum number of DOAs. Determines the size of the
+        max_doas (int, optional): Maximum number of DOAs. Determines the size of the
                                  distance and association matrices. Defaults to `2`.
         batch_size (int, optional): Number of samples per batch. Defaults to `256`.
         num_workers (int, optional): Number of subprocesses to use for data loading.
@@ -183,7 +183,7 @@ class HungarianDataModule(LightningDataModule):
     Attributes:
         train_filename (str): Filename for training data.
         test_filename (str): Filename for testing data.
-        max_len (int): Maximum number of DOAs.
+        max_doas (int): Maximum number of DOAs.
         batch_size (int): Batch size for DataLoaders.
         num_workers (int): Number of workers for DataLoaders.
         train_dataset (HungarianDataset): Dataset for training.
@@ -195,7 +195,7 @@ class HungarianDataModule(LightningDataModule):
         self,
         train_filename="data/reference/hung_data_train",
         test_filename="data/reference/hung_data_test",
-        max_len=2,
+        max_doas=2,
         batch_size=256,
         num_workers=4,
     ) -> None:
@@ -207,7 +207,7 @@ class HungarianDataModule(LightningDataModule):
         super().__init__()
         self.train_filename = train_filename
         self.test_filename = test_filename
-        self.max_len = max_len
+        self.max_doas = max_doas
         self.batch_size = batch_size
         self.num_workers = num_workers
 
@@ -227,14 +227,14 @@ class HungarianDataModule(LightningDataModule):
         """
         if stage == "fit" or stage is None:
             self.train_dataset = HungarianDataset(
-                train=True, max_len=self.max_len, filename=self.train_filename
+                train=True, max_doas=self.max_doas, filename=self.train_filename
             )
             self.val_dataset = HungarianDataset(
-                train=False, max_len=self.max_len, filename=self.test_filename
+                train=False, max_doas=self.max_doas, filename=self.test_filename
             )
         if stage == "test" or stage is None:
             self.test_dataset = HungarianDataset(
-                train=False, max_len=self.max_len, filename=self.test_filename
+                train=False, max_doas=self.max_doas, filename=self.test_filename
             )
 
     def train_dataloader(self) -> DataLoader:

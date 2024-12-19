@@ -5,13 +5,13 @@ from hungarian_net.torch_modules.attention_layer import AttentionLayer
 
 
 class HNetGRU(nn.Module):
-    def __init__(self, max_len=4, hidden_size=128):
+    def __init__(self, max_doas=2, hidden_size=128):
         super().__init__()
         self.nb_gru_layers = 1
-        self.max_len = max_len
-        self.gru = nn.GRU(max_len, hidden_size, self.nb_gru_layers, batch_first=True)
+        self.max_doas = max_doas
+        self.gru = nn.GRU(max_doas, hidden_size, self.nb_gru_layers, batch_first=True)
         self.attn = AttentionLayer(hidden_size, hidden_size, hidden_size)
-        self.fc1 = nn.Linear(hidden_size, max_len)
+        self.fc1 = nn.Linear(hidden_size, max_doas)
 
     def forward(self, query):
         # query - batch x seq x feature

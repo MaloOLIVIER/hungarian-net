@@ -2,7 +2,7 @@ log_every_n_steps: 100
 
 logger:
   _target_: aim.pytorch_lightning.AimLogger
-  experiment: 'tested_on_${sample_range_tested_on}/trained_on_${sample_range_trained_on}/${resolution_used}_hnet_model_DOA${max_len}_${now:%H%M%S}'
+  experiment: 'tested_on_${sample_range_tested_on}/trained_on_${sample_range_trained_on}/${resolution_used}_hnet_model_DOA${max_doas}_${now:%H%M%S}'
   train_metric_prefix: 'train_'
   test_metric_prefix: 'test_'
   val_metric_prefix: 'validation_'

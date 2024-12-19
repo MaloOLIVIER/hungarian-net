@@ -1,5 +1,5 @@
 _target_: hungarian_net.lightning_modules.hnet_gru_lightning.HNetGRULightning
 # _partial_: true
-max_len: ${max_len}
+max_doas: ${max_doas}
 optimizer: ${optimizer}
 scheduler: ${scheduler}

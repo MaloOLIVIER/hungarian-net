@@ -19,8 +19,8 @@ def test_HNetGRU_init(hnetgru, max_doas) -> None:
     """
     assert isinstance(hnetgru, HNetGRU), "Model is not an instance of HNetGRU"
     assert (
-        hnetgru.max_len == max_doas
-    ), f"Expected max_doas {max_doas}, got {hnetgru.max_len}"
+        hnetgru.max_doas == max_doas
+    ), f"Expected max_doas {max_doas}, got {hnetgru.max_doas}"
 
 
 @pytest.mark.consistency
@@ -34,7 +34,7 @@ def test_HNetGRU_forward(hnetgru, batch_size) -> None:
     Returns:
         None
     """
-    input_tensor = torch.randn(batch_size, hnetgru.max_len, hnetgru.max_len)
+    input_tensor = torch.randn(batch_size, hnetgru.max_doas, hnetgru.max_doas)
     # query - batch x seq x feature
     output1, output2, output3 = hnetgru.forward(input_tensor)
     # output1 - batch x (seq x feature)
@@ -43,13 +43,13 @@ def test_HNetGRU_forward(hnetgru, batch_size) -> None:
 
     assert output1.shape == (
         batch_size,
-        hnetgru.max_len * hnetgru.max_len,
-    ), f"Expected output1 shape {(batch_size, hnetgru.max_len, hnetgru.max_len)}, got {output1.shape}"
+        hnetgru.max_doas * hnetgru.max_doas,
+    ), f"Expected output1 shape {(batch_size, hnetgru.max_doas, hnetgru.max_doas)}, got {output1.shape}"
     assert output2.shape == (
         batch_size,
-        hnetgru.max_len,
-    ), f"Expected output2 shape {(batch_size, hnetgru.max_len)}, got {output2.shape}"
+        hnetgru.max_doas,
+    ), f"Expected output2 shape {(batch_size, hnetgru.max_doas)}, got {output2.shape}"
     assert output3.shape == (
         batch_size,
-        hnetgru.max_len,
-    ), f"Expected output3 shape {(batch_size, hnetgru.max_len)}, got {output3.shape}"
+        hnetgru.max_doas,
+    ), f"Expected output3 shape {(batch_size, hnetgru.max_doas)}, got {output3.shape}"

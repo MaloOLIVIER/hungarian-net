@@ -35,17 +35,26 @@ class HNetGRULightning(L.LightningModule):
         device: torch.device = torch.device(
             "cuda" if torch.cuda.is_available() else "cpu"
         ),
-        max_len: int = 2,
+        max_doas: int = 2,
         optimizer: partial[optim.Optimizer] = partial(optim.Adam),
         scheduler: partial[optim.lr_scheduler] = None,
     ):
+        """_summary_
+
+        Args:
+            metrics (MetricCollection): _description_
+            device (torch.device, optional): _description_. Defaults to torch.device( "cuda" if torch.cuda.is_available() else "cpu" ).
+            max_doas (int, optional): _description_. Defaults to 2.
+            optimizer (partial[optim.Optimizer], optional): _description_. Defaults to partial(optim.Adam).
+            scheduler (partial[optim.lr_scheduler], optional): _description_. Defaults to None.
+        """
         super().__init__()
 
         # Automatically save hyperparameters except for non-serializable objects
         self.save_hyperparameters(ignore=["metrics", "device", "optimizer"])
 
         self._device = device
-        self.model = HNetGRU(max_len=max_len).to(self._device)
+        self.model = HNetGRU(max_doas=max_doas).to(self._device)
 
         self.criterion1 = nn.BCEWithLogitsLoss(reduction="sum")
         self.criterion2 = nn.BCEWithLogitsLoss(reduction="sum")
@@ -61,7 +70,7 @@ class HNetGRULightning(L.LightningModule):
         )
 
         self.metrics: MetricCollection = metrics
-        self.confusion_matrix = MulticlassConfusionMatrix(num_classes=max_len)
+        self.confusion_matrix = MulticlassConfusionMatrix(num_classes=max_doas)
 
     def common_step(
         self, batch, batch_idx
