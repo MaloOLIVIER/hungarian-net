@@ -1,3 +1,15 @@
+"""
+@inproceedings{Adavanne_2021,
+title={Differentiable Tracking-Based Training of Deep Learning Sound Source Localizers},
+url={http://dx.doi.org/10.1109/WASPAA52581.2021.9632773},
+DOI={10.1109/waspaa52581.2021.9632773},
+booktitle={2021 IEEE Workshop on Applications of Signal Processing to Audio and Acoustics (WASPAA)},
+publisher={IEEE},
+author={Adavanne, Sharath and Politis, Archontis and Virtanen, Tuomas},
+year={2021},
+month=oct, pages={211–215} }
+"""
+
 import torch
 import torch.nn as nn
 
