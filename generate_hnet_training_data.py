@@ -25,7 +25,7 @@ from scipy.spatial import distance
 default_sample_range = np.array([3000, 5000, 15000])
 
 
-def sph2cart(azimuth: float, elevation: float, r: float) -> np.ndarray:
+def sph2cart(azimuth: float, elevation: float, r: float) -> np.ndarray[float]:
     """
     Converts spherical coordinates to Cartesian coordinates.
 
@@ -35,7 +35,7 @@ def sph2cart(azimuth: float, elevation: float, r: float) -> np.ndarray:
         r (float): Radius.
 
     Returns:
-        np.ndarray: Cartesian coordinates as an array [x, y, z].
+        np.ndarray[float]: Cartesian coordinates as an array [x, y, z].
     """
     x = r * np.cos(elevation) * np.cos(azimuth)
     y = r * np.cos(elevation) * np.sin(azimuth)
@@ -316,7 +316,7 @@ def main(
     defined sample ranges for different Directions of Arrival (DOAs).
 
     Args:
-        sample_range (np.ndarray, optional): Array specifying the number of samples for each DOA combination.
+        sample_range (np.ndarray[int], optional): Array specifying the number of samples for each DOA combination.
                                            Should correspond to the minimum of `nb_ref` and `nb_pred`.
                                            Defaults to `default_sample_range`.
         max_doas (int, optional): Maximum number of Directions of Arrival (DOAs) to consider. Defaults to 2.
