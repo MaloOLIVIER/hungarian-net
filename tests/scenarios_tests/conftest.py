@@ -1,6 +1,5 @@
 # tests/scenarios_tests/conftest.py
 
-import hydra
 import numpy as np
 import pytest
 
@@ -23,7 +22,7 @@ def max_doas(request) -> int:
         int: The current value of `max_doas` for the test iteration.
 
     Example:
-        When used in a test, `max_doas` will sequentially take the values 2, 4, and 8.
+        When used in a test, `max_doas` will take the value 2.
     """
     return request.param
 
@@ -34,7 +33,7 @@ def batch_size(request) -> int:
     Fixture to provide different batch sizes for testing.
 
     This fixture parameterizes the `batch_size`, allowing tests to verify model performance
-    and behavior with various batch sizes. This helps in ensuring that the model scales
+    and behavior with varying batch sizes. This helps in ensuring that the model scales
     appropriately with different amounts of data processed in each training iteration.
 
     Args:
@@ -45,7 +44,7 @@ def batch_size(request) -> int:
         int: The current value of `batch_size` for the test iteration.
 
     Example:
-        When used in a test, `batch_size` will sequentially take the values 64, 128, and 256.
+        When used in a test, `batch_size` will take the value 256.
     """
     return request.param
 
@@ -67,8 +66,7 @@ def model(max_doas) -> HNetGRU:
         HNetGRU: An initialized instance of the `HNetGRU` model configured with the specified `max_doas`.
 
     Example:
-        When used in a test, `model` will be an instance of `HNetGRU` with `max_doas` set to values
-        2, 4, and 8 across different test iterations.
+        When used in a test, `model` will be an instance of `HNetGRU` with `max_doas` set to 2.
     """
     return HNetGRU(max_doas=max_doas)
 
@@ -88,6 +86,9 @@ def nb_epochs(request) -> int:
 
     Returns:
         int: The current number of training epochs for the test iteration.
+
+    Example:
+        When used in a test, `nb_epochs` will take the value 1000.
     """
     return request.param
 
@@ -137,7 +138,7 @@ def sample_range(request) -> np.array:
         When used in a test, `sample_range` will sequentially take the following values:
         - [3000, 5000, 15000] (Uniform Distribution)
         - [5000, 5000, 5000]  (Flat Distribution)
-        - [1000, 3000, 31000] (Skewed Distribution)
+        - [1000, 3000, 31000] (Exponential Distribution)
         - [2600, 5000, 17000] (Slightly Increasing Distribution)
         - [6300, 4000, 1500]  (Reverse Exponential Distribution)
         - [2000, 7000, 14000] (Custom Mixed Emphasis 1)

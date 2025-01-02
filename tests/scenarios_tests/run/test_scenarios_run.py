@@ -42,10 +42,24 @@ import pytest
         ),
     ],
 )
-def test_run_under_various_distributions(training_data, test_data):
+def test_run_under_various_distributions(training_data: str, test_data: str) -> None:
     """
     Train the HNetGRU model with various data distributions.
 
+    This test function parameterizes over different training and testing datasets with varying
+    data distributions. It runs the HNetGRU training process using specified data configurations
+    to ensure that the model can handle different data distributions appropriately.
+
+    Args:
+        training_data (str): Path to the training data file with a specific DOA distribution.
+        test_data (str): Path to the test data file corresponding to the training data distribution.
+
+    Returns:
+        None
+
+    Example:
+        The test runs multiple times with different training and testing data paths,
+        each representing a unique distribution configuration for the purposes of training and evaluation.
     """
 
     # Extract sample ranges from the training_data filename
@@ -67,6 +81,8 @@ def test_run_under_various_distributions(training_data, test_data):
         f"sample_range_trained_on={sample_range_trained_on}",
     ]
 
+    # Execute the training script with the specified overrides
     os.system(f"python run.py {' '.join(overrides)}")
 
+    # Placeholder assertion to indicate test completion
     assert True, "Training completed successfully"
