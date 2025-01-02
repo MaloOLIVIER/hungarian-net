@@ -2,10 +2,11 @@
 
 import pytest
 
+from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataModule
+from unittest.mock import patch, MagicMock
 from hungarian_net.torch_modules.attention_layer import AttentionLayer
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
-
-# TODO: maybe rewrite docstrings
+import numpy as np
 
 
 @pytest.fixture(params=[2, 4, 8])
@@ -114,3 +115,69 @@ def attentionLayer(in_channels, out_channels, key_channels) -> AttentionLayer:
         AttentionLayer: An initialized instance of the `AttentionLayer` model configured with the specified channels.
     """
     return AttentionLayer(in_channels, out_channels, key_channels)
+
+@pytest.fixture(params=[1,2,4])
+def num_workers(request) -> int:
+    """
+    Fixture to provide different values for the number of workers in the DataLoader.
+
+    This fixture parameterizes the `num_workers` value, allowing tests to run with varying numbers
+    of workers to ensure that the DataLoader behaves correctly across different configurations.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current value of `num_workers` for the test iteration.
+
+    Example:
+        When used in a test, `num_workers` will sequentially take the values 1, 2, and 4.
+    """
+    return request.param
+
+@pytest.fixture
+def mock_data_dict():
+    """
+    Fixture to provide a mock data dictionary for testing HungarianDataset.
+
+    Returns:
+        dict: A dictionary containing mock data samples.
+    """
+    return {
+        0: (
+            2,  # nb_ref
+            2,  # nb_pred
+            np.array([[0.0, 1.0], [1.0, 0.0]]),  # dist_mat
+            np.array([[1, 0], [0, 1]]),          # da_mat
+            np.array([[0, 0, 0], [1, 0, 0]]),   # ref_cart
+            np.array([[0, 0, 0], [1, 0, 0]]),   # pred_cart
+        ),
+        1: (
+            1,  # nb_ref
+            1,  # nb_pred
+            np.array([[0.0]]),  # dist_mat
+            np.array([[1]]),     # da_mat
+            np.array([[0, 0, 0]]),  # ref_cart
+            np.array([[0, 0, 0]]),  # pred_cart
+        ),
+    }
+    
+@pytest.fixture
+@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
+def mock_lightning_datamodule(mock_load_obj: MagicMock, batch_size: int, num_workers: int):
+    """
+    Fixture to provide a mock LightningDataModule for testing HungarianDataModule.
+
+    Returns:
+        HungarianDataModule: An instance of HungarianDataModule with mock data.
+    """
+    # Arrange
+    mock_load_obj.return_value = mock_data_dict
+    return HungarianDataModule(
+        train_filename='mock_train',
+        test_filename='mock_test',
+        max_doas=2, #because mock_data_dict goes to max_doas=2
+        batch_size=batch_size,
+        num_workers=num_workers
+    )
