@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataModule, HungarianDataset
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict):
+def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the initialization of HungarianDataset.
 
@@ -30,7 +30,7 @@ def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict):
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_len(mock_load_obj: MagicMock, data_dict: Dict):
+def test_hungarian_dataset_len(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the __len__ method of HungarianDataset.
 
@@ -56,7 +56,7 @@ def test_hungarian_dataset_len(mock_load_obj: MagicMock, data_dict: Dict):
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict):
+def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the __getitem__ method of HungarianDataset.
 
@@ -125,7 +125,7 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict):
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, data_dict: Dict):
+def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the compute_class_imbalance method of HungarianDataset.
 
@@ -154,7 +154,7 @@ def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, dat
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.HungarianDataset')
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dataset: MagicMock, lightning_datamodule: HungarianDataModule, data_dict: Dict):
+def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dataset: MagicMock, lightning_datamodule: HungarianDataModule, data_dict: Dict) -> None:
     """
     Test the setup method of HungarianDataModule.
 
@@ -190,7 +190,7 @@ def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dat
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict):
+def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict) -> None:
     """
     Test the train_dataloader method of HungarianDataModule.
 
@@ -220,7 +220,7 @@ def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightni
     assert train_loader.drop_last is True, "drop_last should be enabled."
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict):
+def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict) -> None:
     """
     Test the val_dataloader method of HungarianDataModule.
 
@@ -250,7 +250,7 @@ def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning
     assert val_loader.drop_last is False, "drop_last should be disabled."
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_test_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict):
+def test_hungarian_datamodule_test_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict) -> None:
     """
     Test the test_dataloader method of HungarianDataModule.
 

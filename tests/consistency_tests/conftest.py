@@ -1,9 +1,13 @@
 # tests/consistency_tests/conftest.py
 
 import pytest
+from typing import Dict
+from torchmetrics import MetricCollection
+from torchmetrics.classification import MulticlassF1Score
 
 from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataModule
 from unittest.mock import patch, MagicMock
+from hungarian_net.lightning_modules.hnet_gru_lightning import HNetGRULightning
 from hungarian_net.torch_modules.attention_layer import AttentionLayer
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 import numpy as np
@@ -79,6 +83,16 @@ def hnetgru(max_doas) -> HNetGRU:
 def in_channels(request) -> int:
     """
     Fixture to provide different values for the number of input channels.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current number of input channels for the test iteration.
+
+    Example:
+        When used in a test, `in_channels` will take the value 128.
     """
     return request.param
 
@@ -87,6 +101,16 @@ def in_channels(request) -> int:
 def out_channels(request) -> int:
     """
     Fixture to provide different values for the number of output channels.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current number of output channels for the test iteration.
+
+    Example:
+        When used in a test, `out_channels` will take the value 128.
     """
     return request.param
 
@@ -95,6 +119,16 @@ def out_channels(request) -> int:
 def key_channels(request) -> int:
     """
     Fixture to provide different values for the number of key channels.
+
+    Args:
+        request (FixtureRequest): Pytest's fixture request object that provides access to the
+                                  parameters specified in the `params` list.
+
+    Returns:
+        int: The current number of key channels for the test iteration.
+
+    Example:
+        When used in a test, `key_channels` will take the value 128.
     """
     return request.param
 
@@ -113,6 +147,9 @@ def attentionLayer(in_channels, out_channels, key_channels) -> AttentionLayer:
 
     Returns:
         AttentionLayer: An initialized instance of the `AttentionLayer` model configured with the specified channels.
+
+    Example:
+        When used in a test, `attentionLayer` will be an instance with 128 input, output, and key channels.
     """
     return AttentionLayer(in_channels, out_channels, key_channels)
 
@@ -137,12 +174,74 @@ def num_workers(request) -> int:
     return request.param
 
 @pytest.fixture
-def mock_data_dict():
+def metrics(max_doas: int) -> MetricCollection:
+    """
+    Fixture to provide a MetricCollection for testing HNetGRULightning.
+
+    This fixture creates a collection of metrics, including the MulticlassF1Score, configured
+    based on the `max_doas` parameter. It ensures that the metrics are appropriately set up
+    for evaluating classification performance in multi-class scenarios.
+
+    Args:
+        max_doas (int): The number of classes for the MulticlassF1Score metric.
+
+    Returns:
+        MetricCollection: A collection of metrics used by the HNetGRULightning module.
+
+    Example:
+        When used in a test, `metrics` will include a weighted MulticlassF1Score for the specified number of DOAs.
+    """
+    return MetricCollection({
+        'f1': MulticlassF1Score(num_classes=max_doas, average='weighted', zero_division=1)
+    })
+
+@pytest.fixture
+def hnet_gru_lightning(metrics: MetricCollection, max_doas: int) -> HNetGRULightning:
+    """
+    Fixture to provide an instance of HNetGRULightning for testing.
+
+    This fixture initializes the `HNetGRULightning` module with the provided metrics and
+    maximum number of DOAs. It sets up the Lightning module to be used in various tests,
+    ensuring consistency across test cases.
+
+    Args:
+        metrics (MetricCollection): The collection of metrics to be used by the module.
+        max_doas (int): The maximum number of Directions of Arrival (DOAs) for the model.
+
+    Returns:
+        HNetGRULightning: An initialized instance of the `HNetGRULightning` module.
+
+    Example:
+        When used in a test, `hnet_gru_lightning` will be an instance configured with the specified metrics and DOAs.
+    """
+    return HNetGRULightning(
+        metrics=metrics,
+        max_doas=max_doas
+    )
+
+@pytest.fixture
+def data_dict() -> Dict:
     """
     Fixture to provide a mock data dictionary for testing HungarianDataset.
 
+    This fixture returns a dictionary containing mock data samples, each consisting of:
+    - Number of references (`nb_ref`)
+    - Number of predictions (`nb_pred`)
+    - Distance matrix (`dist_mat`)
+    - Association matrix (`da_mat`)
+    - Reference Cartesian coordinates (`ref_cart`)
+    - Prediction Cartesian coordinates (`pred_cart`)
+
+    The mock data is structured to simulate real dataset entries, enabling comprehensive testing
+    of the HungarianDataModule's functionality.
+
     Returns:
-        dict: A dictionary containing mock data samples.
+        Dict: A dictionary containing mock data samples.
+
+    Example:
+        The `data_dict` fixture returns a dictionary with two entries:
+            - Entry 0: 2 references and predictions with specific distance and association matrices.
+            - Entry 1: 1 reference and prediction with simplified matrices.
     """
     return {
         0: (
@@ -165,19 +264,33 @@ def mock_data_dict():
     
 @pytest.fixture
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def mock_lightning_datamodule(mock_load_obj: MagicMock, batch_size: int, num_workers: int):
+def lightning_datamodule(mock_load_obj: MagicMock, batch_size: int, num_workers: int) -> HungarianDataModule:
     """
-    Fixture to provide a mock LightningDataModule for testing HungarianDataModule.
+    Fixture to provide an instance of HungarianDataModule for testing.
+
+    This fixture mocks the `load_obj` function to return the provided `data_dict` and initializes
+    the `HungarianDataModule` with mock filenames, maximum DOAs, batch size, and number of workers.
+    It ensures that the data loading process within the module uses the controlled mock data,
+    facilitating isolated and reliable tests.
+
+    Args:
+        mock_load_obj (MagicMock): Mock of the `load_obj` function to return `data_dict`.
+        batch_size (int): The batch size to be used by the DataLoader.
+        num_workers (int): The number of worker processes for data loading.
+        data_dict (Dict): The mock data dictionary to be returned by `load_obj`.
 
     Returns:
-        HungarianDataModule: An instance of HungarianDataModule with mock data.
+        HungarianDataModule: An initialized instance of `HungarianDataModule` with mock data.
+
+    Example:
+        When used in a test, `lightning_datamodule` will load data from `data_dict` with specified batch size and workers.
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     return HungarianDataModule(
         train_filename='mock_train',
         test_filename='mock_test',
-        max_doas=2, #because mock_data_dict goes to max_doas=2
+        max_doas=2, #because mock_data_dict goes up to max_doas=2
         batch_size=batch_size,
         num_workers=num_workers
     )

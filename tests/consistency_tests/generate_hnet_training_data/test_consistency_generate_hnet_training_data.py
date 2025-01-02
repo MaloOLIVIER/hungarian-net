@@ -6,7 +6,7 @@ import pytest
 from generate_hnet_training_data import compute_class_imbalance, sph2cart
 
 @pytest.mark.consistency
-def test_sph2cart():
+def test_sph2cart() -> None:
     """
     Test the `sph2cart` function with a simple case where azimuth and elevation are both zero.
     
@@ -50,7 +50,7 @@ def test_sph2cart():
         (np.pi / 3, np.pi / 2, 1, np.array([0, 0, 1])),
     ],
 )
-def test_sph2cart_multiple_cases(azimuth: float, elevation: float, r: float, expected: np.ndarray):
+def test_sph2cart_multiple_cases(azimuth: float, elevation: float, r: float, expected: np.ndarray) -> None:
     """
     Test the `sph2cart` function with multiple combinations of azimuth, elevation, and radius values.
     
@@ -73,7 +73,7 @@ def test_sph2cart_multiple_cases(azimuth: float, elevation: float, r: float, exp
 
 
 @pytest.mark.consistency
-def test_compute_class_imbalance():
+def test_compute_class_imbalance() -> None:
     """
     Test the `compute_class_imbalance` function with a predefined data dictionary.
     
