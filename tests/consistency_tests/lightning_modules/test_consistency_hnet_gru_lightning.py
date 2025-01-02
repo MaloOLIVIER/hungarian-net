@@ -7,6 +7,7 @@ from torchmetrics import MetricCollection
 from hungarian_net.lightning_modules.hnet_gru_lightning import HNetGRULightning
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
+@pytest.mark.consistency
 def test_hnet_gru_lightning_initialization(hnet_gru_lightning: HNetGRULightning, metrics: MetricCollection) -> None:
     """
     Test the initialization of HNetGRULightning.
@@ -31,6 +32,7 @@ def test_hnet_gru_lightning_initialization(hnet_gru_lightning: HNetGRULightning,
     assert hnet_gru_lightning.scheduler is None, "Scheduler should be None when not provided."
     assert isinstance(hnet_gru_lightning.confusion_matrix, MulticlassConfusionMatrix), "Confusion matrix not initialized correctly."
 
+@pytest.mark.consistency
 def test_hnet_gru_lightning_common_step(hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int) -> None:
     """
     Test the common_step method of HNetGRULightning.
