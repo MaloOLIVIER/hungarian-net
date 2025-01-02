@@ -14,6 +14,10 @@ def test_hnet_gru_lightning_initialization(hnet_gru_lightning: HNetGRULightning,
     This test verifies that the HNetGRULightning module initializes correctly with the provided
     metrics, model, loss functions, optimizer, and scheduler.
 
+    Args:
+        hnet_gru_lightning (HNetGRULightning): Instance of HNetGRULightning.
+        metrics (MetricCollection): Collection of metrics used by the module.
+
     Returns:
         None
     """    
@@ -25,7 +29,7 @@ def test_hnet_gru_lightning_initialization(hnet_gru_lightning: HNetGRULightning,
     assert hnet_gru_lightning.criterion_wts == [1.0, 1.0, 1.0], "Loss weights not initialized correctly."
     assert isinstance(hnet_gru_lightning.optimizer, torch.optim.Adam), "Optimizer not initialized correctly."
     assert hnet_gru_lightning.scheduler is None, "Scheduler should be None when not provided."
-    assert isinstance(hnet_gru_lightning.confusion_matrix, MulticlassConfusionMatrix)
+    assert isinstance(hnet_gru_lightning.confusion_matrix, MulticlassConfusionMatrix), "Confusion matrix not initialized correctly."
 
 def test_hnet_gru_lightning_common_step(hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int):
     """
@@ -33,6 +37,10 @@ def test_hnet_gru_lightning_common_step(hnet_gru_lightning: HNetGRULightning, hn
 
     This test verifies that the common_step correctly computes the total loss and returns the expected outputs.
 
+    Args:
+        hnet_gru_lightning (HNetGRULightning): Instance of HNetGRULightning.
+        hnetgru (HNetGRU): Instance of the HNetGRU model.
+        max_doas (int): Maximum number of Degrees of Arrival (DOAs).
 
     Returns:
         None
