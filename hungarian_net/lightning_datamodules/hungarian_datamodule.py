@@ -161,10 +161,6 @@ class HungarianDataset(Dataset):
 
         return WA
 
-
-# TODO: factorize HungarianDataset in HungarianDataModule
-
-
 class HungarianDataModule(LightningDataModule):
     """
     A PyTorch Lightning DataModule for managing data loading for the Hungarian Network.
