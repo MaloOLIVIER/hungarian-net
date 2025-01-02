@@ -5,6 +5,7 @@ import torch
 
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
+
 @pytest.mark.consistency
 def test_HNetGRU_init(hnetgru, max_doas) -> None:
     """Test the initialization of the HNetGRU model.
@@ -20,6 +21,7 @@ def test_HNetGRU_init(hnetgru, max_doas) -> None:
     assert (
         hnetgru.max_doas == max_doas
     ), f"Expected max_doas {max_doas}, got {hnetgru.max_doas}"
+
 
 @pytest.mark.consistency
 def test_HNetGRU_forward(hnetgru, batch_size) -> None:

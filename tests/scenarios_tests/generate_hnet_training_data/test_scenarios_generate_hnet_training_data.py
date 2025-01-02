@@ -5,6 +5,7 @@ import pytest
 from generate_hnet_training_data import main
 import numpy as np
 
+
 @pytest.mark.scenarios
 @pytest.mark.scenarios_generate_data
 @pytest.mark.parametrize(

@@ -58,8 +58,8 @@ def test_checkpoints(test_filename: str, checkpoint_path: str) -> None:
         None
 
     Example:
-        The test runs multiple times with different combinations of `test_filename` and `checkpoint_path`, 
-        each representing unique distribution configurations and training epochs for the purposes of 
+        The test runs multiple times with different combinations of `test_filename` and `checkpoint_path`,
+        each representing unique distribution configurations and training epochs for the purposes of
         model evaluation.
     """
 

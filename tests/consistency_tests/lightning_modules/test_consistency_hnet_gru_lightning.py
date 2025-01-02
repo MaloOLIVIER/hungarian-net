@@ -7,8 +7,11 @@ from torchmetrics import MetricCollection
 from hungarian_net.lightning_modules.hnet_gru_lightning import HNetGRULightning
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
+
 @pytest.mark.consistency
-def test_hnet_gru_lightning_initialization(hnet_gru_lightning: HNetGRULightning, metrics: MetricCollection) -> None:
+def test_hnet_gru_lightning_initialization(
+    hnet_gru_lightning: HNetGRULightning, metrics: MetricCollection
+) -> None:
     """
     Test the initialization of HNetGRULightning.
 
@@ -21,19 +24,40 @@ def test_hnet_gru_lightning_initialization(hnet_gru_lightning: HNetGRULightning,
 
     Returns:
         None
-    """    
+    """
     assert hnet_gru_lightning.metrics == metrics, "Metrics not initialized correctly."
-    assert isinstance(hnet_gru_lightning.model, HNetGRU), "Model not initialized correctly."
-    assert isinstance(hnet_gru_lightning.criterion1, torch.nn.BCEWithLogitsLoss), "criterion1 not initialized correctly."
-    assert isinstance(hnet_gru_lightning.criterion2, torch.nn.BCEWithLogitsLoss), "criterion2 not initialized correctly."
-    assert isinstance(hnet_gru_lightning.criterion3, torch.nn.BCEWithLogitsLoss), "criterion3 not initialized correctly."
-    assert hnet_gru_lightning.criterion_wts == [1.0, 1.0, 1.0], "Loss weights not initialized correctly."
-    assert isinstance(hnet_gru_lightning.optimizer, torch.optim.Adam), "Optimizer not initialized correctly."
-    assert hnet_gru_lightning.scheduler is None, "Scheduler should be None when not provided."
-    assert isinstance(hnet_gru_lightning.confusion_matrix, MulticlassConfusionMatrix), "Confusion matrix not initialized correctly."
+    assert isinstance(
+        hnet_gru_lightning.model, HNetGRU
+    ), "Model not initialized correctly."
+    assert isinstance(
+        hnet_gru_lightning.criterion1, torch.nn.BCEWithLogitsLoss
+    ), "criterion1 not initialized correctly."
+    assert isinstance(
+        hnet_gru_lightning.criterion2, torch.nn.BCEWithLogitsLoss
+    ), "criterion2 not initialized correctly."
+    assert isinstance(
+        hnet_gru_lightning.criterion3, torch.nn.BCEWithLogitsLoss
+    ), "criterion3 not initialized correctly."
+    assert hnet_gru_lightning.criterion_wts == [
+        1.0,
+        1.0,
+        1.0,
+    ], "Loss weights not initialized correctly."
+    assert isinstance(
+        hnet_gru_lightning.optimizer, torch.optim.Adam
+    ), "Optimizer not initialized correctly."
+    assert (
+        hnet_gru_lightning.scheduler is None
+    ), "Scheduler should be None when not provided."
+    assert isinstance(
+        hnet_gru_lightning.confusion_matrix, MulticlassConfusionMatrix
+    ), "Confusion matrix not initialized correctly."
+
 
 @pytest.mark.consistency
-def test_hnet_gru_lightning_common_step(hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int) -> None:
+def test_hnet_gru_lightning_common_step(
+    hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int
+) -> None:
     """
     Test the common_step method of HNetGRULightning.
 
@@ -52,9 +76,9 @@ def test_hnet_gru_lightning_common_step(hnet_gru_lightning: HNetGRULightning, hn
         torch.randn(1, max_doas, max_doas),  # feat
         [
             torch.randn(max_doas, max_doas).reshape(-1),  # label
-            torch.randn(max_doas, max_doas).sum(-1), 
-            torch.randn(max_doas, max_doas).sum(-2),  
-        ]
+            torch.randn(max_doas, max_doas).sum(-1),
+            torch.randn(max_doas, max_doas).sum(-2),
+        ],
     )
     hnetgru_outputs = hnetgru(batch[0])
 

@@ -3,6 +3,7 @@ import pytest
 
 from hungarian_net.torch_modules.attention_layer import AttentionLayer
 
+
 @pytest.mark.consistency
 def test_AttentionLayer_init(attentionLayer: AttentionLayer) -> None:
     """Test the initialization of the AttentionLayer.

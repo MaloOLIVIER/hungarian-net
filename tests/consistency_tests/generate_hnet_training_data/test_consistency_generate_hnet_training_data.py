@@ -5,18 +5,19 @@ import pytest
 
 from generate_hnet_training_data import compute_class_imbalance, sph2cart
 
+
 @pytest.mark.consistency
 def test_sph2cart() -> None:
     """
     Test the `sph2cart` function with a simple case where azimuth and elevation are both zero.
-    
-    This test verifies that the spherical to Cartesian conversion is correct for 
+
+    This test verifies that the spherical to Cartesian conversion is correct for
     azimuth=0 degrees, elevation=0 degrees, and radius=1, which should map to
     the point (1, 0, 0) in Cartesian coordinates.
-    
+
     Args:
         None
-    
+
     Returns:
         None
     """
@@ -50,19 +51,21 @@ def test_sph2cart() -> None:
         (np.pi / 3, np.pi / 2, 1, np.array([0, 0, 1])),
     ],
 )
-def test_sph2cart_multiple_cases(azimuth: float, elevation: float, r: float, expected: np.ndarray) -> None:
+def test_sph2cart_multiple_cases(
+    azimuth: float, elevation: float, r: float, expected: np.ndarray
+) -> None:
     """
     Test the `sph2cart` function with multiple combinations of azimuth, elevation, and radius values.
-    
-    This parameterized test ensures that the `sph2cart` function accurately converts 
+
+    This parameterized test ensures that the `sph2cart` function accurately converts
     spherical coordinates to Cartesian coordinates across various scenarios.
-    
+
     Args:
         azimuth (float): Azimuth angle in radians.
         elevation (float): Elevation angle in radians.
         r (float): Radius.
         expected (np.ndarray): Expected Cartesian coordinates.
-    
+
     Returns:
         None
     """
@@ -76,14 +79,14 @@ def test_sph2cart_multiple_cases(azimuth: float, elevation: float, r: float, exp
 def test_compute_class_imbalance() -> None:
     """
     Test the `compute_class_imbalance` function with a predefined data dictionary.
-    
-    This test verifies that the `compute_class_imbalance` function correctly counts the 
+
+    This test verifies that the `compute_class_imbalance` function correctly counts the
     number of '0's and '1's in the association matrices within the provided data dictionary.
     It uses a simple `data_dict` containing one association matrix with known counts for validation.
-    
+
     Args:
         None
-    
+
     Returns:
         None
     """

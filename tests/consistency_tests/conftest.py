@@ -153,7 +153,8 @@ def attentionLayer(in_channels, out_channels, key_channels) -> AttentionLayer:
     """
     return AttentionLayer(in_channels, out_channels, key_channels)
 
-@pytest.fixture(params=[1,2,4])
+
+@pytest.fixture(params=[1, 2, 4])
 def num_workers(request) -> int:
     """
     Fixture to provide different values for the number of workers in the DataLoader.
@@ -173,6 +174,7 @@ def num_workers(request) -> int:
     """
     return request.param
 
+
 @pytest.fixture
 def metrics(max_doas: int) -> MetricCollection:
     """
@@ -191,9 +193,14 @@ def metrics(max_doas: int) -> MetricCollection:
     Example:
         When used in a test, `metrics` will include a weighted MulticlassF1Score for the specified number of DOAs.
     """
-    return MetricCollection({
-        'f1': MulticlassF1Score(num_classes=max_doas, average='weighted', zero_division=1)
-    })
+    return MetricCollection(
+        {
+            "f1": MulticlassF1Score(
+                num_classes=max_doas, average="weighted", zero_division=1
+            )
+        }
+    )
+
 
 @pytest.fixture
 def hnet_gru_lightning(metrics: MetricCollection, max_doas: int) -> HNetGRULightning:
@@ -214,10 +221,8 @@ def hnet_gru_lightning(metrics: MetricCollection, max_doas: int) -> HNetGRULight
     Example:
         When used in a test, `hnet_gru_lightning` will be an instance configured with the specified metrics and DOAs.
     """
-    return HNetGRULightning(
-        metrics=metrics,
-        max_doas=max_doas
-    )
+    return HNetGRULightning(metrics=metrics, max_doas=max_doas)
+
 
 @pytest.fixture
 def data_dict() -> Dict:
@@ -248,23 +253,26 @@ def data_dict() -> Dict:
             2,  # nb_ref
             2,  # nb_pred
             np.array([[0.0, 1.0], [1.0, 0.0]]),  # dist_mat
-            np.array([[1, 0], [0, 1]]),          # da_mat
-            np.array([[0, 0, 0], [1, 0, 0]]),   # ref_cart
-            np.array([[0, 0, 0], [1, 0, 0]]),   # pred_cart
+            np.array([[1, 0], [0, 1]]),  # da_mat
+            np.array([[0, 0, 0], [1, 0, 0]]),  # ref_cart
+            np.array([[0, 0, 0], [1, 0, 0]]),  # pred_cart
         ),
         1: (
             1,  # nb_ref
             1,  # nb_pred
             np.array([[0.0]]),  # dist_mat
-            np.array([[1]]),     # da_mat
+            np.array([[1]]),  # da_mat
             np.array([[0, 0, 0]]),  # ref_cart
             np.array([[0, 0, 0]]),  # pred_cart
         ),
     }
-    
+
+
 @pytest.fixture
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def lightning_datamodule(mock_load_obj: MagicMock, batch_size: int, num_workers: int) -> HungarianDataModule:
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
+def lightning_datamodule(
+    mock_load_obj: MagicMock, batch_size: int, num_workers: int
+) -> HungarianDataModule:
     """
     Fixture to provide an instance of HungarianDataModule for testing.
 
@@ -288,9 +296,9 @@ def lightning_datamodule(mock_load_obj: MagicMock, batch_size: int, num_workers:
     # Arrange
     mock_load_obj.return_value = data_dict
     return HungarianDataModule(
-        train_filename='mock_train',
-        test_filename='mock_test',
-        max_doas=2, #because mock_data_dict goes up to max_doas=2
+        train_filename="mock_train",
+        test_filename="mock_test",
+        max_doas=2,  # because mock_data_dict goes up to max_doas=2
         batch_size=batch_size,
-        num_workers=num_workers
+        num_workers=num_workers,
     )

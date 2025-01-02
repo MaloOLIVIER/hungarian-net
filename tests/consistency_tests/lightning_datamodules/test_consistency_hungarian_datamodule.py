@@ -4,9 +4,13 @@ import pytest
 from typing import Dict
 import numpy as np
 from unittest.mock import patch, MagicMock
-from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataModule, HungarianDataset
+from hungarian_net.lightning_datamodules.hungarian_datamodule import (
+    HungarianDataModule,
+    HungarianDataset,
+)
 
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
+
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
 def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the initialization of HungarianDataset.
@@ -22,14 +26,15 @@ def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict) -> No
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    dataset = HungarianDataset(train=True, max_doas=2, filename='mock_filename')
+    dataset = HungarianDataset(train=True, max_doas=2, filename="mock_filename")
 
     # Assert
     assert dataset.data_dict == data_dict, "Data dictionary not loaded correctly."
     assert dataset.max_doas == 2, "max_doas not set correctly."
 
+
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
 def test_hungarian_dataset_len(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the __len__ method of HungarianDataset.
@@ -46,16 +51,19 @@ def test_hungarian_dataset_len(mock_load_obj: MagicMock, data_dict: Dict) -> Non
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    dataset = HungarianDataset(train=False, max_doas=2, filename='mock_filename')
+    dataset = HungarianDataset(train=False, max_doas=2, filename="mock_filename")
 
     # Act
     length = len(dataset)
 
     # Assert
-    assert length == len(data_dict), f"Dataset length {length} does not match expected {len(data_dict)}."
+    assert length == len(
+        data_dict
+    ), f"Dataset length {length} does not match expected {len(data_dict)}."
+
 
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
 def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict) -> None:
     """
     Test the __getitem__ method of HungarianDataset.
@@ -71,7 +79,7 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict) ->
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    dataset = HungarianDataset(train=True, max_doas=2, filename='mock_filename')
+    dataset = HungarianDataset(train=True, max_doas=2, filename="mock_filename")
 
     # Act & Assert for first item
     feat, label = dataset[0]
@@ -82,20 +90,25 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict) ->
         data_dict[0][3].sum(-2),
     ]
     np.testing.assert_array_almost_equal(
-        feat, expected_feat, decimal=6,
-        err_msg="Features do not match expected values."
+        feat, expected_feat, decimal=6, err_msg="Features do not match expected values."
     )
     np.testing.assert_array_almost_equal(
-        label[0], expected_label[0], decimal=6,
-        err_msg="Labels do not match expected values."
+        label[0],
+        expected_label[0],
+        decimal=6,
+        err_msg="Labels do not match expected values.",
     )
     np.testing.assert_array_almost_equal(
-        label[1], expected_label[1], decimal=6,
-        err_msg="Labels do not match expected values."
+        label[1],
+        expected_label[1],
+        decimal=6,
+        err_msg="Labels do not match expected values.",
     )
     np.testing.assert_array_almost_equal(
-        label[2], expected_label[2], decimal=6,
-        err_msg="Labels do not match expected values."
+        label[2],
+        expected_label[2],
+        decimal=6,
+        err_msg="Labels do not match expected values.",
     )
 
     # Act & Assert for second item
@@ -107,25 +120,33 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict) ->
         data_dict[1][3].sum(-2),
     ]
     np.testing.assert_array_almost_equal(
-        feat, expected_feat, decimal=6,
-        err_msg="Features do not match expected values."
+        feat, expected_feat, decimal=6, err_msg="Features do not match expected values."
     )
     np.testing.assert_array_almost_equal(
-        label[0], expected_label[0], decimal=6,
-        err_msg="Labels do not match expected values."
+        label[0],
+        expected_label[0],
+        decimal=6,
+        err_msg="Labels do not match expected values.",
     )
     np.testing.assert_array_almost_equal(
-        label[1], expected_label[1], decimal=6,
-        err_msg="Labels do not match expected values."
+        label[1],
+        expected_label[1],
+        decimal=6,
+        err_msg="Labels do not match expected values.",
     )
     np.testing.assert_array_almost_equal(
-        label[2], expected_label[2], decimal=6,
-        err_msg="Labels do not match expected values."
+        label[2],
+        expected_label[2],
+        decimal=6,
+        err_msg="Labels do not match expected values.",
     )
 
+
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, data_dict: Dict) -> None:
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
+def test_hungarian_dataset_compute_class_imbalance(
+    mock_load_obj: MagicMock, data_dict: Dict
+) -> None:
     """
     Test the compute_class_imbalance method of HungarianDataset.
 
@@ -140,22 +161,27 @@ def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, dat
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    dataset = HungarianDataset(train=True, max_doas=2, filename='mock_filename')
+    dataset = HungarianDataset(train=True, max_doas=2, filename="mock_filename")
 
     # Act
     class_counts = dataset.compute_class_imbalance()
 
     # Assert
-    expected_counts = {
-        0: 2,  # Two '0's in da_mat
-        1: 3   # Three '1's in da_mat
-    }
-    assert class_counts == expected_counts, f"Expected {expected_counts}, got {class_counts}"
+    expected_counts = {0: 2, 1: 3}  # Two '0's in da_mat  # Three '1's in da_mat
+    assert (
+        class_counts == expected_counts
+    ), f"Expected {expected_counts}, got {class_counts}"
+
 
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.HungarianDataset')
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dataset: MagicMock, lightning_datamodule: HungarianDataModule, data_dict: Dict) -> None:
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.HungarianDataset")
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
+def test_hungarian_datamodule_setup(
+    mock_load_obj: MagicMock,
+    mock_hungarian_dataset: MagicMock,
+    lightning_datamodule: HungarianDataModule,
+    data_dict: Dict,
+) -> None:
     """
     Test the setup method of HungarianDataModule.
 
@@ -173,25 +199,36 @@ def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dat
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    mock_hungarian_dataset.return_value = HungarianDataset(train=True, max_doas=2, filename='mock_train')
+    mock_hungarian_dataset.return_value = HungarianDataset(
+        train=True, max_doas=2, filename="mock_train"
+    )
 
     # Act: Setup for 'fit' stage
-    lightning_datamodule.setup(stage='fit')
+    lightning_datamodule.setup(stage="fit")
 
     # Assert
-    assert hasattr(lightning_datamodule, 'train_dataset'), "train_dataset not set."
-    assert hasattr(lightning_datamodule, 'val_dataset'), "val_dataset not set."
+    assert hasattr(lightning_datamodule, "train_dataset"), "train_dataset not set."
+    assert hasattr(lightning_datamodule, "val_dataset"), "val_dataset not set."
 
     # Act: Setup for 'test' stage
-    lightning_datamodule.setup(stage='test')
+    lightning_datamodule.setup(stage="test")
 
     # Assert
-    mock_hungarian_dataset.assert_called_with(train=False, max_doas=2, filename='mock_test')
-    assert hasattr(lightning_datamodule, 'test_dataset'), "test_dataset not set."
+    mock_hungarian_dataset.assert_called_with(
+        train=False, max_doas=2, filename="mock_test"
+    )
+    assert hasattr(lightning_datamodule, "test_dataset"), "test_dataset not set."
+
 
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict) -> None:
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
+def test_hungarian_datamodule_train_dataloader(
+    mock_load_obj: MagicMock,
+    lightning_datamodule: HungarianDataModule,
+    num_workers: int,
+    batch_size: int,
+    data_dict: Dict,
+) -> None:
     """
     Test the train_dataloader method of HungarianDataModule.
 
@@ -206,11 +243,14 @@ def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightni
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    
-    lightning_datamodule.setup(stage='fit')
-    
+
+    lightning_datamodule.setup(stage="fit")
+
     assert type(lightning_datamodule.train_dataset) is HungarianDataset
-    assert lightning_datamodule.train_dataset.max_doas == HungarianDataset(train=True, max_doas=2, filename='mock_train').max_doas
+    assert (
+        lightning_datamodule.train_dataset.max_doas
+        == HungarianDataset(train=True, max_doas=2, filename="mock_train").max_doas
+    )
 
     # Act
     train_loader = lightning_datamodule.train_dataloader()
@@ -220,9 +260,16 @@ def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightni
     assert train_loader.num_workers == num_workers, "Number of workers incorrect."
     assert train_loader.drop_last is True, "drop_last should be enabled."
 
+
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict) -> None:
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
+def test_hungarian_datamodule_val_dataloader(
+    mock_load_obj: MagicMock,
+    lightning_datamodule: HungarianDataModule,
+    num_workers: int,
+    batch_size: int,
+    data_dict: Dict,
+) -> None:
     """
     Test the val_dataloader method of HungarianDataModule.
 
@@ -237,11 +284,14 @@ def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    
-    lightning_datamodule.setup(stage='fit')
-    
+
+    lightning_datamodule.setup(stage="fit")
+
     assert type(lightning_datamodule.val_dataset) is HungarianDataset
-    assert lightning_datamodule.val_dataset.max_doas == HungarianDataset(train=False, max_doas=2, filename='mock_test').max_doas
+    assert (
+        lightning_datamodule.val_dataset.max_doas
+        == HungarianDataset(train=False, max_doas=2, filename="mock_test").max_doas
+    )
 
     # Act
     val_loader = lightning_datamodule.val_dataloader()
@@ -251,9 +301,16 @@ def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning
     assert val_loader.num_workers == num_workers, "Number of workers incorrect."
     assert val_loader.drop_last is False, "drop_last should be disabled."
 
+
 @pytest.mark.consistency
-@patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_test_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict) -> None:
+@patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
+def test_hungarian_datamodule_test_dataloader(
+    mock_load_obj: MagicMock,
+    lightning_datamodule: HungarianDataModule,
+    num_workers: int,
+    batch_size: int,
+    data_dict: Dict,
+) -> None:
     """
     Test the test_dataloader method of HungarianDataModule.
 
@@ -268,11 +325,14 @@ def test_hungarian_datamodule_test_dataloader(mock_load_obj: MagicMock, lightnin
     """
     # Arrange
     mock_load_obj.return_value = data_dict
-    
-    lightning_datamodule.setup(stage='test')
-    
+
+    lightning_datamodule.setup(stage="test")
+
     assert type(lightning_datamodule.test_dataset) is HungarianDataset
-    assert lightning_datamodule.test_dataset.max_doas == HungarianDataset(train=False, max_doas=2, filename='mock_test').max_doas
+    assert (
+        lightning_datamodule.test_dataset.max_doas
+        == HungarianDataset(train=False, max_doas=2, filename="mock_test").max_doas
+    )
 
     # Act
     test_loader = lightning_datamodule.test_dataloader()
