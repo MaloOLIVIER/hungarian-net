@@ -4,34 +4,33 @@ import pytest
 from typing import Dict
 import numpy as np
 from unittest.mock import patch, MagicMock
-from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataset
+from hungarian_net.lightning_datamodules.hungarian_datamodule import HungarianDataModule, HungarianDataset
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_init(mock_load_obj: MagicMock, mock_data_dict: Dict):
+def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict):
     """
     Test the initialization of HungarianDataset.
 
-    This test verifies that the HungarianDataset initializes correctly with the provided parameters
-    and that the class imbalance weights are computed as expected.
+    This test verifies that the HungarianDataset initializes correctly with the provided parameters.
 
     Args:
         mock_load_obj (MagicMock): Mocked load_obj function.
-        mock_data_dict (Dict): Mock data dictionary.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     dataset = HungarianDataset(train=True, max_doas=2, filename='mock_filename')
 
     # Assert
-    assert dataset.data_dict == mock_data_dict, "Data dictionary not loaded correctly."
+    assert dataset.data_dict == data_dict, "Data dictionary not loaded correctly."
     assert dataset.max_doas == 2, "max_doas not set correctly."
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_len(mock_load_obj: MagicMock, mock_data_dict: Dict):
+def test_hungarian_dataset_len(mock_load_obj: MagicMock, data_dict: Dict):
     """
     Test the __len__ method of HungarianDataset.
 
@@ -40,24 +39,24 @@ def test_hungarian_dataset_len(mock_load_obj: MagicMock, mock_data_dict: Dict):
 
     Args:
         mock_load_obj (MagicMock): Mocked load_obj function.
-        mock_data_dict (Dict): Mock data dictionary.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     dataset = HungarianDataset(train=False, max_doas=2, filename='mock_filename')
 
     # Act
     length = len(dataset)
 
     # Assert
-    assert length == len(mock_data_dict), f"Dataset length {length} does not match expected {len(mock_data_dict)}."
+    assert length == len(data_dict), f"Dataset length {length} does not match expected {len(data_dict)}."
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, mock_data_dict: Dict):
+def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, data_dict: Dict):
     """
     Test the __getitem__ method of HungarianDataset.
 
@@ -65,22 +64,22 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, mock_data_dict: Dic
 
     Args:
         mock_load_obj (MagicMock): Mocked load_obj function.
-        mock_data_dict (Dict): Mock data dictionary.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     dataset = HungarianDataset(train=True, max_doas=2, filename='mock_filename')
 
     # Act & Assert for first item
     feat, label = dataset[0]
-    expected_feat = mock_data_dict[0][2]
+    expected_feat = data_dict[0][2]
     expected_label = [
-        mock_data_dict[0][3].reshape(-1),
-        mock_data_dict[0][3].sum(-1),
-        mock_data_dict[0][3].sum(-2),
+        data_dict[0][3].reshape(-1),
+        data_dict[0][3].sum(-1),
+        data_dict[0][3].sum(-2),
     ]
     np.testing.assert_array_almost_equal(
         feat, expected_feat, decimal=6,
@@ -101,11 +100,11 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, mock_data_dict: Dic
 
     # Act & Assert for second item
     feat, label = dataset[1]
-    expected_feat = mock_data_dict[1][2]
+    expected_feat = data_dict[1][2]
     expected_label = [
-        mock_data_dict[1][3].reshape(-1),
-        mock_data_dict[1][3].sum(-1),
-        mock_data_dict[1][3].sum(-2),
+        data_dict[1][3].reshape(-1),
+        data_dict[1][3].sum(-1),
+        data_dict[1][3].sum(-2),
     ]
     np.testing.assert_array_almost_equal(
         feat, expected_feat, decimal=6,
@@ -126,7 +125,7 @@ def test_hungarian_dataset_getitem(mock_load_obj: MagicMock, mock_data_dict: Dic
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, mock_data_dict: Dict):
+def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, data_dict: Dict):
     """
     Test the compute_class_imbalance method of HungarianDataset.
 
@@ -134,13 +133,13 @@ def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, moc
 
     Args:
         mock_load_obj (MagicMock): Mocked load_obj function.
-        mock_data_dict (Dict): Mock data dictionary.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     dataset = HungarianDataset(train=True, max_doas=2, filename='mock_filename')
 
     # Act
@@ -155,7 +154,7 @@ def test_hungarian_dataset_compute_class_imbalance(mock_load_obj: MagicMock, moc
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.HungarianDataset')
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dataset: MagicMock, mock_lightning_datamodule: MagicMock, mock_data_dict: Dict):
+def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dataset: MagicMock, lightning_datamodule: HungarianDataModule, data_dict: Dict):
     """
     Test the setup method of HungarianDataModule.
 
@@ -165,55 +164,55 @@ def test_hungarian_datamodule_setup(mock_load_obj: MagicMock, mock_hungarian_dat
     Args:
         mock_load_obj (MagicMock): Mocked load_obj function.
         mock_hungarian_dataset (MagicMock): Mocked HungarianDataset class.
-        mock_lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
-        mock_data_dict (Dict): Mock data dictionary.
+        lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     mock_hungarian_dataset.return_value = HungarianDataset(train=True, max_doas=2, filename='mock_train')
 
     # Act: Setup for 'fit' stage
-    mock_lightning_datamodule.setup(stage='fit')
+    lightning_datamodule.setup(stage='fit')
 
     # Assert
-    assert hasattr(mock_lightning_datamodule, 'train_dataset'), "train_dataset not set."
-    assert hasattr(mock_lightning_datamodule, 'val_dataset'), "val_dataset not set."
+    assert hasattr(lightning_datamodule, 'train_dataset'), "train_dataset not set."
+    assert hasattr(lightning_datamodule, 'val_dataset'), "val_dataset not set."
 
     # Act: Setup for 'test' stage
-    mock_lightning_datamodule.setup(stage='test')
+    lightning_datamodule.setup(stage='test')
 
     # Assert
     mock_hungarian_dataset.assert_called_with(train=False, max_doas=2, filename='mock_test')
-    assert hasattr(mock_lightning_datamodule, 'test_dataset'), "test_dataset not set."
+    assert hasattr(lightning_datamodule, 'test_dataset'), "test_dataset not set."
 
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, mock_lightning_datamodule: MagicMock, num_workers: int, batch_size: int, mock_data_dict: Dict):
+def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict):
     """
     Test the train_dataloader method of HungarianDataModule.
 
     This test verifies that the training DataLoader is configured correctly.
 
     Args:
-        mock_lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
-        mock_data_dict (Dict): Mock data dictionary.
+        lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     
-    mock_lightning_datamodule.setup(stage='fit')
+    lightning_datamodule.setup(stage='fit')
     
-    assert type(mock_lightning_datamodule.train_dataset) is HungarianDataset
-    assert mock_lightning_datamodule.train_dataset.max_doas == HungarianDataset(train=True, max_doas=2, filename='mock_train').max_doas
+    assert type(lightning_datamodule.train_dataset) is HungarianDataset
+    assert lightning_datamodule.train_dataset.max_doas == HungarianDataset(train=True, max_doas=2, filename='mock_train').max_doas
 
     # Act
-    train_loader = mock_lightning_datamodule.train_dataloader()
+    train_loader = lightning_datamodule.train_dataloader()
 
     # Assert
     assert train_loader.batch_size == batch_size, "Batch size incorrect."
@@ -221,29 +220,29 @@ def test_hungarian_datamodule_train_dataloader(mock_load_obj: MagicMock, mock_li
     assert train_loader.drop_last is True, "drop_last should be enabled."
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, mock_lightning_datamodule: MagicMock, num_workers: int, batch_size: int, mock_data_dict: Dict):
+def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict):
     """
     Test the val_dataloader method of HungarianDataModule.
 
     This test verifies that the validation DataLoader is configured correctly.
 
     Args:
-        mock_lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
-        mock_data_dict (Dict): Mock data dictionary.
+        lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
+        data_dict (Dict): Mocked data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     
-    mock_lightning_datamodule.setup(stage='fit')
+    lightning_datamodule.setup(stage='fit')
     
-    assert type(mock_lightning_datamodule.val_dataset) is HungarianDataset
-    assert mock_lightning_datamodule.val_dataset.max_doas == HungarianDataset(train=False, max_doas=2, filename='mock_test').max_doas
+    assert type(lightning_datamodule.val_dataset) is HungarianDataset
+    assert lightning_datamodule.val_dataset.max_doas == HungarianDataset(train=False, max_doas=2, filename='mock_test').max_doas
 
     # Act
-    val_loader = mock_lightning_datamodule.val_dataloader()
+    val_loader = lightning_datamodule.val_dataloader()
 
     # Assert
     assert val_loader.batch_size == batch_size, "Batch size incorrect."
@@ -251,29 +250,29 @@ def test_hungarian_datamodule_val_dataloader(mock_load_obj: MagicMock, mock_ligh
     assert val_loader.drop_last is False, "drop_last should be disabled."
 
 @patch('hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj')
-def test_hungarian_datamodule_test_dataloader(mock_load_obj: MagicMock, mock_lightning_datamodule: MagicMock, num_workers: int, batch_size: int, mock_data_dict: Dict):
+def test_hungarian_datamodule_test_dataloader(mock_load_obj: MagicMock, lightning_datamodule: HungarianDataModule, num_workers: int, batch_size: int, data_dict: Dict):
     """
     Test the test_dataloader method of HungarianDataModule.
 
     This test verifies that the testing DataLoader is configured correctly.
 
     Args:
-        mock_lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
-        mock_data_dict (Dict): Mock data dictionary.
+        lightning_datamodule (HungarianDataModule): Instance of HungarianDataModule.
+        data_dict (Dict): Mock data dictionary.
 
     Returns:
         None
     """
     # Arrange
-    mock_load_obj.return_value = mock_data_dict
+    mock_load_obj.return_value = data_dict
     
-    mock_lightning_datamodule.setup(stage='test')
+    lightning_datamodule.setup(stage='test')
     
-    assert type(mock_lightning_datamodule.test_dataset) is HungarianDataset
-    assert mock_lightning_datamodule.test_dataset.max_doas == HungarianDataset(train=False, max_doas=2, filename='mock_test').max_doas
+    assert type(lightning_datamodule.test_dataset) is HungarianDataset
+    assert lightning_datamodule.test_dataset.max_doas == HungarianDataset(train=False, max_doas=2, filename='mock_test').max_doas
 
     # Act
-    test_loader = mock_lightning_datamodule.test_dataloader()
+    test_loader = lightning_datamodule.test_dataloader()
 
     # Assert
     assert test_loader.batch_size == batch_size, "Batch size incorrect."
