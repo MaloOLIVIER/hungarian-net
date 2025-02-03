@@ -22,8 +22,8 @@ Differentiable assignation problem resolution by deep learning method.
 
 ## Getting Started
  
-* `generate_hnet_training_data.py` generates synthetic distance matrices and association matrices. 
-* Then `run.py` to train Hnet with the generated data.
+* `python generate_hnet_training_data.py` generates synthetic distance matrices and association matrices. 
+* Then `python run.py` to train Hnet with the generated data.
 
 ---
 
