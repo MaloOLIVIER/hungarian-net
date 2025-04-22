@@ -4,6 +4,10 @@ on: [push, pull_request]
 
 jobs:
   test:
+    permissions:
+      contents: read
+      pull-requests: write
+      
     name: Test on Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
 
@@ -43,3 +47,9 @@ jobs:
       with:
         name: coverage-report-html
         path: htmlcov/
+        
+    - name: First interaction
+      uses: actions/first-interaction@v1.3.0
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
