@@ -1,6 +1,7 @@
 # tests/consistency_tests/conftest.py
 
 import pytest
+import torch
 from typing import Dict
 from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassF1Score
@@ -12,6 +13,22 @@ from hungarian_net.torch_modules.attention_layer import AttentionLayer
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 import numpy as np
 
+@pytest.fixture
+def device() -> torch.device:
+    """
+    Fixture to provide the device type for PyTorch operations.
+
+    This fixture returns the device type as a string, which can be either "cpu" or "cuda".
+    It is used to ensure that the model and tensors are moved to the appropriate device
+    for computation.
+
+    Returns:
+        str: The device type for PyTorch operations.
+
+    Example:
+        When used in a test, `device` will return "cpu" or "cuda" based on the available hardware.
+    """
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @pytest.fixture(params=[2, 4, 8])
 def max_doas(request) -> int:
@@ -57,7 +74,7 @@ def batch_size(request) -> int:
 
 
 @pytest.fixture
-def hnetgru(max_doas) -> HNetGRU:
+def hnetgru(max_doas, device: torch.device) -> HNetGRU:
     """
     Fixture to initialize and provide an instance of the HNetGRU model.
 
@@ -76,7 +93,8 @@ def hnetgru(max_doas) -> HNetGRU:
         When used in a test, `model` will be an instance of `HNetGRU` with `max_doas` set to values
         2, 4, and 8 across different test iterations.
     """
-    return HNetGRU(max_doas=max_doas)
+    model: HNetGRU = HNetGRU(max_doas=max_doas).to(device=device)
+    return model
 
 
 @pytest.fixture(params=[128])
@@ -134,7 +152,7 @@ def key_channels(request) -> int:
 
 
 @pytest.fixture
-def attentionLayer(in_channels, out_channels, key_channels) -> AttentionLayer:
+def attentionLayer(in_channels, out_channels, key_channels, device: torch.device) -> AttentionLayer:
     """
     Fixture to initialize and provide an instance of the AttentionLayer model.
 
@@ -151,7 +169,8 @@ def attentionLayer(in_channels, out_channels, key_channels) -> AttentionLayer:
     Example:
         When used in a test, `attentionLayer` will be an instance with 128 input, output, and key channels.
     """
-    return AttentionLayer(in_channels, out_channels, key_channels)
+    attentionLayer: AttentionLayer = AttentionLayer(in_channels, out_channels, key_channels).to(device=device)
+    return attentionLayer
 
 
 @pytest.fixture(params=[1, 2, 4])
@@ -176,7 +195,7 @@ def num_workers(request) -> int:
 
 
 @pytest.fixture
-def metrics(max_doas: int) -> MetricCollection:
+def metrics(max_doas: int, device: torch.device) -> MetricCollection:
     """
     Fixture to provide a MetricCollection for testing HNetGRULightning.
 
@@ -193,17 +212,18 @@ def metrics(max_doas: int) -> MetricCollection:
     Example:
         When used in a test, `metrics` will include a weighted MulticlassF1Score for the specified number of DOAs.
     """
-    return MetricCollection(
+    metricCollection: MetricCollection = MetricCollection(
         {
             "f1": MulticlassF1Score(
                 num_classes=max_doas, average="weighted", zero_division=1
             )
         }
-    )
+    ).to(device=device)
+    return metricCollection
 
 
 @pytest.fixture
-def hnet_gru_lightning(metrics: MetricCollection, max_doas: int) -> HNetGRULightning:
+def hnet_gru_lightning(metrics: MetricCollection, max_doas: int, device: torch.device) -> HNetGRULightning:
     """
     Fixture to provide an instance of HNetGRULightning for testing.
 
@@ -221,7 +241,8 @@ def hnet_gru_lightning(metrics: MetricCollection, max_doas: int) -> HNetGRULight
     Example:
         When used in a test, `hnet_gru_lightning` will be an instance configured with the specified metrics and DOAs.
     """
-    return HNetGRULightning(metrics=metrics, max_doas=max_doas)
+    hnet_gru_lightning: HNetGRULightning = HNetGRULightning(metrics=metrics, max_doas=max_doas).to(device=device)
+    return hnet_gru_lightning
 
 
 @pytest.fixture
