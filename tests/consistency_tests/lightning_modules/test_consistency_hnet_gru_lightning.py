@@ -56,7 +56,7 @@ def test_hnet_gru_lightning_initialization(
 
 @pytest.mark.consistency
 def test_hnet_gru_lightning_common_step(
-    hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int
+    hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int, device: torch.device
 ) -> None:
     """
     Test the common_step method of HNetGRULightning.
@@ -73,11 +73,11 @@ def test_hnet_gru_lightning_common_step(
     """
     # Arrange
     batch = (
-        torch.randn(1, max_doas, max_doas),  # feat
+        torch.randn(1, max_doas, max_doas).to(device=device),  # feat
         [
-            torch.randn(max_doas, max_doas).reshape(-1),  # label
-            torch.randn(max_doas, max_doas).sum(-1),
-            torch.randn(max_doas, max_doas).sum(-2),
+            torch.randn(max_doas, max_doas).reshape(-1).to(device=device),  # label
+            torch.randn(max_doas, max_doas).sum(-1).to(device=device),
+            torch.randn(max_doas, max_doas).sum(-2).to(device=device),
         ],
     )
     hnetgru_outputs = hnetgru(batch[0])
