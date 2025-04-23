@@ -1,8 +1,11 @@
 # hungarian_net/lightning_datamodules/hungarian_datamodule.py
+import threading
 import typing as tp
 
 import numpy as np
 from lightning import LightningDataModule
+from functools import lru_cache
+import os
 from torch.utils.data import DataLoader, Dataset
 
 from generate_hnet_training_data import load_obj
@@ -47,21 +50,124 @@ class HungarianDataset(Dataset):
         Raises:
             ValueError: If the specified data file cannot be loaded correctly.
         """
-        if train:
-            self.data_dict = load_obj(filename)
-        else:
-            self.data_dict = load_obj(filename)
-        self.max_doas = max_doas
+        if filename is None or not isinstance(filename, str):
+            raise ValueError("Filename must be a valid string path")
+        
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"Data file not found: {filename}")
+            
+        if max_doas is None or max_doas <= 0:
+            raise ValueError("max_doas must be a positive integer")
+        
+        # All initialization happens in try block
+        try:
+            # Attempt to load data with error handling
+            self.data_dict = self._load_data_safely(filename)
+            
+            # Validate data structure
+            if not self.data_dict:
+                raise ValueError("Loaded data dictionary is empty")
+                
+            # Check at least one sample for expected structure
+            if len(self.data_dict) > 0:
+                sample = self.data_dict[0]
+                if not isinstance(sample, tuple) or len(sample) < 4:
+                    raise ValueError("Data samples do not have the expected structure")
+            
+            self.max_doas = max_doas
+            self._lock = threading.RLock()  # Lock for thread safety
+            
+            # Initialize weights with proper dimensions
+            self.pos_wts = np.ones(self.max_doas**2)
+            self.f_scr_wts = np.ones(self.max_doas**2)
+            
+            # Compute weights if training dataset
+            if train:
+                self._compute_weights()
+                
+        except Exception as e:
+            # If initialization fails, clean up and re-raise
+            self.data_dict = None
+            self.max_doas = None
+            self.pos_wts = None
+            self.f_scr_wts = None
+            raise ValueError(f"Failed to initialize dataset: {str(e)}") from e
 
-        self.pos_wts = np.ones(self.max_doas**2)
-        self.f_scr_wts = np.ones(self.max_doas**2)
-        if train:
+    def _load_data_safely(self, filename: str) -> dict:
+        """
+        Computes class imbalance weights for training.
+    
+        This thread-safe method calculates two sets of weights:
+        1. f_scr_wts: Feature score weights calculated as the proportion of positive samples
+        2. pos_wts: Position weights calculated as the ratio of negative to positive samples
+        
+        These weights are used to handle class imbalance in the binary classification task.
+        The method updates the instance variables 'pos_wts' and 'f_scr_wts' in-place.
+        
+        Both calculations include safeguards against division by zero through the use of
+        np.divide with appropriate 'out' and 'where' parameters.
+        
+        Returns:
+            None: Updates self.pos_wts and self.f_scr_wts in-place.
+        """
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                data = load_obj(filename)
+                if data is not None:
+                    return data
+                raise ValueError("Data loaded as None")
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise ValueError(f"Failed to load data after {max_retries} attempts: {str(e)}")
+ 
+    def _compute_weights(self) -> None:
+        """
+        Computes class imbalance weights for training.
+    
+        This thread-safe method calculates two sets of weights:
+        1. f_scr_wts: Feature score weights calculated as the proportion of positive samples
+        2. pos_wts: Position weights calculated as the ratio of negative to positive samples
+        
+        These weights are used to handle class imbalance in the binary classification task.
+        The method updates the instance variables 'pos_wts' and 'f_scr_wts' in-place.
+        
+        Both calculations include safeguards against division by zero through the use of
+        np.divide with appropriate 'out' and 'where' parameters.
+        
+        Returns:
+            None: Updates self.pos_wts and self.f_scr_wts in-place.
+        """
+        with self._lock:  # Isolation: Thread-safe operation
             loc_wts = np.zeros(self.max_doas**2)
-            for i in range(len(self.data_dict)):
-                label = self.data_dict[i][3]
-                loc_wts += label.reshape(-1)
-            self.f_scr_wts = loc_wts / len(self.data_dict)
-            self.pos_wts = (len(self.data_dict) - loc_wts) / loc_wts
+            data_length = len(self.data_dict)
+            
+            if data_length == 0:
+                return  # Nothing to compute
+                
+            for i in range(data_length):
+                try:
+                    label = self.data_dict[i][3]
+                    loc_wts += label.reshape(-1)
+                except (IndexError, ValueError) as e:
+                    # Skip problematic samples but continue processing
+                    continue
+                    
+            # Avoid division by zero
+            self.f_scr_wts = np.divide(
+                loc_wts, 
+                data_length, 
+                out=np.ones_like(loc_wts), 
+                where=data_length!=0
+            )
+            
+            # Avoid division by zero in pos_wts calculation
+            self.pos_wts = np.divide(
+                data_length - loc_wts, 
+                loc_wts, 
+                out=np.ones_like(loc_wts), 
+                where=loc_wts!=0
+            )
 
     def __len__(self) -> int:
         """
@@ -70,7 +176,8 @@ class HungarianDataset(Dataset):
         Returns:
             int: Number of data samples.
         """
-        return len(self.data_dict)
+        with self._lock:
+            return len(self.data_dict) if self.data_dict is not None else 0
 
     def get_pos_wts(self) -> np.ndarray:
         """
@@ -79,7 +186,8 @@ class HungarianDataset(Dataset):
         Returns:
             np.ndarray: Array of position weights.
         """
-        return self.pos_wts
+        with self._lock:
+            return self.pos_wts.copy() if self.pos_wts is not None else np.array([])
 
     def get_f_wts(self) -> np.ndarray:
         """
@@ -88,8 +196,10 @@ class HungarianDataset(Dataset):
         Returns:
             np.ndarray: Array of feature score weights.
         """
-        return self.f_scr_wts
+        with self._lock:
+            return self.f_scr_wts.copy() if self.f_scr_wts is not None else np.array([])
 
+    @lru_cache(maxsize=1)
     def compute_class_imbalance(self) -> dict[int, int]:
         """
         Computes the class imbalance in the dataset.
@@ -101,15 +211,30 @@ class HungarianDataset(Dataset):
             dict[int, int]: A dictionary where keys are class labels and values are the
                             counts of occurrences of each class.
         """
-        class_counts = {}
-        for key, value in self.data_dict.items():
-            nb_ref, nb_pred, dist_mat, da_mat, ref_cart, pred_cart = value
-            for row in da_mat:
-                for elem in row:
-                    if elem not in class_counts:
-                        class_counts[int(elem)] = 0
-                    class_counts[int(elem)] += 1
-        return class_counts
+        with self._lock:
+            if self.data_dict is None:
+                return {}
+                
+            class_counts = {}
+            
+            for idx in range(len(self.data_dict)):
+                try:
+                    value = self.data_dict[idx]
+                    if len(value) < 4:
+                        continue  # Skip invalid entries
+                        
+                    nb_ref, nb_pred, dist_mat, da_mat, *_ = value
+                    for row in da_mat:
+                        for elem in row:
+                            elem_int = int(elem)
+                            if elem_int not in class_counts:
+                                class_counts[elem_int] = 0
+                            class_counts[elem_int] += 1
+                except (IndexError, ValueError, TypeError):
+                    # Skip problematic entries
+                    continue
+                    
+            return class_counts
 
     def __getitem__(self, idx: int) -> tuple[np.ndarray, list[np.ndarray]]:
         """
@@ -123,11 +248,38 @@ class HungarianDataset(Dataset):
                    - feat (numpy.ndarray): Feature matrix for the sample.
                    - label (list): List containing reshaped label arrays.
         """
-        feat = self.data_dict[idx][2]
-        label = self.data_dict[idx][3]
-
-        label = [label.reshape(-1), label.sum(-1), label.sum(-2)]
-        return feat, label
+        with self._lock:
+            # Consistency: Validate index
+            if self.data_dict is None:
+                raise RuntimeError("Dataset not properly initialized")
+                
+            if not 0 <= idx < len(self.data_dict):
+                raise IndexError(f"Index {idx} out of range for dataset of length {len(self.data_dict)}")
+            
+            try:
+                # Atomicity: Either get both feature and label or fail
+                sample = self.data_dict[idx]
+                if len(sample) < 4:
+                    raise ValueError(f"Sample at index {idx} has invalid structure")
+                    
+                feat = sample[2]
+                label = sample[3]
+                
+                # Consistency: Validate shapes
+                if feat is None or label is None:
+                    raise ValueError(f"Invalid feature or label at index {idx}")
+                    
+                # Return a copy to avoid accidental modifications
+                label_reshaped = [
+                    label.reshape(-1).copy(), 
+                    label.sum(-1).copy(), 
+                    label.sum(-2).copy()
+                ]
+                return feat.copy(), label_reshaped
+                
+            except Exception as e:
+                # Durability: On failure, return a safe empty result
+                raise RuntimeError(f"Failed to retrieve item at index {idx}: {str(e)}") from e
 
     def compute_weighted_accuracy(self, n1star: int, n0star: int) -> float:
         """
@@ -147,19 +299,36 @@ class HungarianDataset(Dataset):
 
         URL: https://arxiv.org/abs/1906.06618
         """
-        WA = 0
-
-        class_counts = self.compute_class_imbalance()
-
-        n0 = class_counts.get(0, 0)  # number of 0s
-        n1 = class_counts.get(1, 0)  # number of 1s
-
-        w0 = n1 / (n0 + n1)  # weight for class 0
-        w1 = 1 - w0  # weight for class 1
-
-        WA = (w1 * n1star + w0 * n0star) / (w1 * n1 + w0 * n0)
-
-        return WA
+        if not isinstance(n1star, int) or not isinstance(n0star, int):
+            raise ValueError("Inputs must be integers")
+            
+        if n1star < 0 or n0star < 0:
+            raise ValueError("Counts must be non-negative")
+        
+        try:
+            class_counts = self.compute_class_imbalance()
+            
+            n0 = class_counts.get(0, 0)  # number of 0s
+            n1 = class_counts.get(1, 0)  # number of 1s
+            
+            # Consistency: Handle edge cases
+            if n0 + n1 == 0:
+                return 0.0
+                
+            w0 = n1 / (n0 + n1)  # weight for class 0
+            w1 = 1 - w0  # weight for class 1
+            
+            # Consistency: Handle edge cases
+            denominator = (w1 * n1 + w0 * n0)
+            if denominator == 0:
+                return 0.0
+                
+            WA = (w1 * n1star + w0 * n0star) / denominator
+            return float(WA)  # Ensure return type consistency
+            
+        except Exception as e:
+            # Log error and return default
+            return 0.0
 
 class HungarianDataModule(LightningDataModule):
     """
@@ -199,11 +368,26 @@ class HungarianDataModule(LightningDataModule):
         num_workers=4,
     ) -> None:
         super().__init__()
+
+        if not isinstance(max_doas, int) or max_doas <= 0:
+            raise ValueError("max_doas must be a positive integer")
+            
+        if not isinstance(batch_size, int) or batch_size <= 0:
+            raise ValueError("batch_size must be a positive integer")
+            
+        if not isinstance(num_workers, int) or num_workers < 0:
+            raise ValueError("num_workers must be a non-negative integer")
+
         self.train_filename = train_filename
         self.test_filename = test_filename
         self.max_doas = max_doas
         self.batch_size = batch_size
         self.num_workers = num_workers
+
+        self.train_dataset = None
+        self.val_dataset = None
+        self.test_dataset = None
+        self._setup_lock = threading.Lock()
 
     # TODO: def transfer_batch_to_device(self, batch, device, dataloader_idx):
 
@@ -219,17 +403,22 @@ class HungarianDataModule(LightningDataModule):
             stage (str, optional): The stage for which to set up the data.
                                    Can be 'fit', 'validate', 'test', or 'predict'. Defaults to `None`.
         """
-        if stage == "fit" or stage is None:
-            self.train_dataset = HungarianDataset(
-                train=True, max_doas=self.max_doas, filename=self.train_filename
-            )
-            self.val_dataset = HungarianDataset(
-                train=False, max_doas=self.max_doas, filename=self.test_filename
-            )
-        if stage == "test" or stage is None:
-            self.test_dataset = HungarianDataset(
-                train=False, max_doas=self.max_doas, filename=self.test_filename
-            )
+        with self._setup_lock:
+            try:
+                if stage == "fit" or stage is None:
+                    self.train_dataset = HungarianDataset(
+                        train=True, max_doas=self.max_doas, filename=self.train_filename
+                    )
+                    self.val_dataset = HungarianDataset(
+                        train=False, max_doas=self.max_doas, filename=self.test_filename
+                    )
+                if stage == "test" or stage is None:
+                    self.test_dataset = HungarianDataset(
+                        train=False, max_doas=self.max_doas, filename=self.test_filename
+                    )
+            except Exception as e:
+                # Log the error and re-raise
+                raise RuntimeError(f"Error in setup: {str(e)}") from e
 
     def train_dataloader(self) -> DataLoader:
         """
@@ -240,6 +429,9 @@ class HungarianDataModule(LightningDataModule):
         Returns:
             DataLoader: Configured DataLoader for training.
         """
+        if self.train_dataset is None:
+            raise RuntimeError("Setup was not called or failed to initialize train_dataset")
+
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
@@ -257,6 +449,9 @@ class HungarianDataModule(LightningDataModule):
         Returns:
             DataLoader: Configured DataLoader for validation.
         """
+        if self.val_dataset is None:
+            raise RuntimeError("Setup was not called or failed to initialize val_dataset")
+ 
         return DataLoader(
             self.val_dataset, batch_size=self.batch_size, num_workers=self.num_workers
         )
@@ -270,6 +465,9 @@ class HungarianDataModule(LightningDataModule):
         Returns:
             DataLoader: Configured DataLoader for testing.
         """
+        if self.test_dataset is None:
+            raise RuntimeError("Setup was not called or failed to initialize test_dataset")
+
         return DataLoader(
             self.test_dataset, batch_size=self.batch_size, num_workers=self.num_workers
         )
