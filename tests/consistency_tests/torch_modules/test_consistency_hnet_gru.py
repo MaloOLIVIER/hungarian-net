@@ -7,7 +7,7 @@ from hungarian_net.torch_modules.hnet_gru import HNetGRU
 
 
 @pytest.mark.consistency
-def test_HNetGRU_init(hnetgru, max_doas) -> None:
+def test_HNetGRU_init(hnetgru: HNetGRU, max_doas: int) -> None:
     """Test the initialization of the HNetGRU model.
 
     Args:
@@ -24,7 +24,7 @@ def test_HNetGRU_init(hnetgru, max_doas) -> None:
 
 
 @pytest.mark.consistency
-def test_HNetGRU_forward(hnetgru, batch_size) -> None:
+def test_HNetGRU_forward(hnetgru: HNetGRU, batch_size: int, device: torch.device) -> None:
     """Test the forward pass of the HNetGRU model to ensure correct output shapes.
 
     Args:
@@ -34,7 +34,7 @@ def test_HNetGRU_forward(hnetgru, batch_size) -> None:
     Returns:
         None
     """
-    input_tensor = torch.randn(batch_size, hnetgru.max_doas, hnetgru.max_doas)
+    input_tensor = torch.randn(batch_size, hnetgru.max_doas, hnetgru.max_doas).to(device=device)
     # query - batch x seq x feature
     output1, output2, output3 = hnetgru.forward(input_tensor)
     # output1 - batch x (seq x feature)
