@@ -13,6 +13,7 @@ from hungarian_net.torch_modules.attention_layer import AttentionLayer
 from hungarian_net.torch_modules.hnet_gru import HNetGRU
 import numpy as np
 
+
 @pytest.fixture
 def device() -> torch.device:
     """
@@ -29,6 +30,7 @@ def device() -> torch.device:
         When used in a test, `device` will return "cpu" or "cuda" based on the available hardware.
     """
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 @pytest.fixture(params=[2, 4, 8])
 def max_doas(request) -> int:
@@ -152,7 +154,9 @@ def key_channels(request) -> int:
 
 
 @pytest.fixture
-def attentionLayer(in_channels, out_channels, key_channels, device: torch.device) -> AttentionLayer:
+def attentionLayer(
+    in_channels, out_channels, key_channels, device: torch.device
+) -> AttentionLayer:
     """
     Fixture to initialize and provide an instance of the AttentionLayer model.
 
@@ -169,7 +173,9 @@ def attentionLayer(in_channels, out_channels, key_channels, device: torch.device
     Example:
         When used in a test, `attentionLayer` will be an instance with 128 input, output, and key channels.
     """
-    attentionLayer: AttentionLayer = AttentionLayer(in_channels, out_channels, key_channels).to(device=device)
+    attentionLayer: AttentionLayer = AttentionLayer(
+        in_channels, out_channels, key_channels
+    ).to(device=device)
     return attentionLayer
 
 
@@ -223,7 +229,9 @@ def metrics(max_doas: int, device: torch.device) -> MetricCollection:
 
 
 @pytest.fixture
-def hnet_gru_lightning(metrics: MetricCollection, max_doas: int, device: torch.device) -> HNetGRULightning:
+def hnet_gru_lightning(
+    metrics: MetricCollection, max_doas: int, device: torch.device
+) -> HNetGRULightning:
     """
     Fixture to provide an instance of HNetGRULightning for testing.
 
@@ -241,7 +249,9 @@ def hnet_gru_lightning(metrics: MetricCollection, max_doas: int, device: torch.d
     Example:
         When used in a test, `hnet_gru_lightning` will be an instance configured with the specified metrics and DOAs.
     """
-    hnet_gru_lightning: HNetGRULightning = HNetGRULightning(metrics=metrics, max_doas=max_doas).to(device=device)
+    hnet_gru_lightning: HNetGRULightning = HNetGRULightning(
+        metrics=metrics, max_doas=max_doas
+    ).to(device=device)
     return hnet_gru_lightning
 
 

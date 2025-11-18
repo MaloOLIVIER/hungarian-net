@@ -317,9 +317,7 @@ class HNetGRULightning(L.LightningModule):
         self.log(f"{stage}_loss", loss, sync_dist=True)
 
         # Log epoch
-        self.log("epoch",
-            self.current_epoch, sync_dist=True
-        )
+        self.log("epoch", self.current_epoch, sync_dist=True)
 
         preds = torch.sigmoid(output[0]) > 0.5
 

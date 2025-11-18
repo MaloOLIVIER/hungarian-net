@@ -133,7 +133,7 @@ class Balancer:
         norms = {}
         grads = {}
         for name, loss in losses.items():
-            grad, = autograd.grad(loss, [input], retain_graph=True)
+            (grad,) = autograd.grad(loss, [input], retain_graph=True)
             if self.per_batch_item:
                 dims = tuple(range(1, grad.dim()))
                 norm = grad.norm(dim=dims).mean()
@@ -151,7 +151,7 @@ class Balancer:
         self._metrics = {}
         if self.monitor:
             for k, v in avg_norms.items():
-                self._metrics[f'ratio_{k}'] = v / total
+                self._metrics[f"ratio_{k}"] = v / total
 
         total_weights = sum([self.weights[k] for k in avg_norms])
         ratios = {k: w / total_weights for k, w in self.weights.items()}

@@ -9,10 +9,12 @@ from hungarian_net.lightning_datamodules.hungarian_datamodule import (
     HungarianDataset,
 )
 
+
 @pytest.fixture(autouse=True)
 def mock_file_exists():
     with patch("os.path.exists", return_value=True):
         yield
+
 
 @patch("hungarian_net.lightning_datamodules.hungarian_datamodule.load_obj")
 def test_hungarian_dataset_init(mock_load_obj: MagicMock, data_dict: Dict) -> None:

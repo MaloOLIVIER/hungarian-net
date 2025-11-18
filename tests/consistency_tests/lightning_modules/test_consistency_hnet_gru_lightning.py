@@ -53,7 +53,10 @@ def test_hnet_gru_lightning_initialization(
 
 @pytest.mark.consistency
 def test_hnet_gru_lightning_common_step(
-    hnet_gru_lightning: HNetGRULightning, hnetgru: HNetGRU, max_doas: int, device: torch.device
+    hnet_gru_lightning: HNetGRULightning,
+    hnetgru: HNetGRU,
+    max_doas: int,
+    device: torch.device,
 ) -> None:
     """
     Test the common_step method of HNetGRULightning.

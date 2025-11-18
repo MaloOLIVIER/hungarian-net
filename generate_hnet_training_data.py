@@ -85,7 +85,7 @@ def compute_class_imbalance(
                 np.ndarray[float],
             ]
         ],
-    ]
+    ],
 ) -> dict[float, int]:
     """
     Computes the number of classes '0' and '1' in the association matrices of the training data.
@@ -397,5 +397,5 @@ def set_seed(seed: int = 42) -> None:
 if __name__ == "__main__":
     main(
         sample_range=np.array([30000, 50000, 150000]),
-        resolution_range="fine_resolution"
+        resolution_range="fine_resolution",
     )

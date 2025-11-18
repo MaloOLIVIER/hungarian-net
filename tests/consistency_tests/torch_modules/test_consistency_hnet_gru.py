@@ -24,7 +24,9 @@ def test_HNetGRU_init(hnetgru: HNetGRU, max_doas: int) -> None:
 
 
 @pytest.mark.consistency
-def test_HNetGRU_forward(hnetgru: HNetGRU, batch_size: int, device: torch.device) -> None:
+def test_HNetGRU_forward(
+    hnetgru: HNetGRU, batch_size: int, device: torch.device
+) -> None:
     """Test the forward pass of the HNetGRU model to ensure correct output shapes.
 
     Args:
@@ -34,7 +36,9 @@ def test_HNetGRU_forward(hnetgru: HNetGRU, batch_size: int, device: torch.device
     Returns:
         None
     """
-    input_tensor = torch.randn(batch_size, hnetgru.max_doas, hnetgru.max_doas).to(device=device)
+    input_tensor = torch.randn(batch_size, hnetgru.max_doas, hnetgru.max_doas).to(
+        device=device
+    )
     # query - batch x seq x feature
     output1, output2, output3 = hnetgru.forward(input_tensor)
     # output1 - batch x (seq x feature)
