@@ -2,8 +2,8 @@ log_every_n_steps: 100
 
 logger:
   _target_: lightning.pytorch.loggers.tensorboard.TensorBoardLogger
-  save_dir: "${hydra:runtime.cwd}/tb_logs/${now:%y%m%d}/"
-  name: 'trained_on_${sample_range_trained_on}/${resolution_used}'
-  version: "hnet_model_DOA${max_doas}_${now:%H%M%S}"
+  save_dir: "tensorboard/"
+  name: null
+  version: .
   log_graph: False
   default_hp_metric: False

@@ -22,7 +22,7 @@ import torch
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial import distance
 
-default_sample_range = np.array([3000, 5000, 15000])
+DEFAULT_SAMPLE_RANGE = np.array([3000, 5000, 15000])
 
 
 def sph2cart(azimuth: float, elevation: float, r: float) -> np.ndarray[float]:
@@ -54,7 +54,7 @@ def save_obj(obj: tp.Any, name: str) -> None:
     Returns:
         None
     """
-    with open(name + ".pkl", "wb") as f:
+    with open(name, "wb") as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -68,7 +68,7 @@ def load_obj(name: str) -> tp.Any:
     Returns:
         Any: The loaded Python object.
     """
-    with open(name + ".pkl", "rb") as f:
+    with open(name, "rb") as f:
         return pickle.load(f)
 
 
@@ -279,7 +279,7 @@ def generate_data(
     os.makedirs(f"data/{current_date}/{data_type}", exist_ok=True)
 
     # Human-readable filename
-    out_filename = f"data/{current_date}/{data_type}/{resolution_range}_{data_type}_DOA{max_doas}_{'-'.join(map(str, sample_range))}"
+    out_filename = f"data/{current_date}/{data_type}/{resolution_range}_{data_type}_DOA{max_doas}_{'-'.join(map(str, sample_range))}.pkl"
 
     print(f"Saving data in: {out_filename}, #examples: {len(data_dict)}")
     save_obj(data_dict, out_filename)
@@ -303,7 +303,7 @@ def generate_data(
 
 
 def main(
-    sample_range=default_sample_range,
+    sample_range=DEFAULT_SAMPLE_RANGE,
     max_doas=2,
     resolution_range="standard_resolution",
     testing="default",
@@ -318,13 +318,13 @@ def main(
     Args:
         sample_range (np.ndarray[int], optional): Array specifying the number of samples for each DOA combination.
                                            Should correspond to the minimum of `nb_ref` and `nb_pred`.
-                                           Defaults to `default_sample_range`.
+                                           Defaults to `DEFAULT_SAMPLE_RANGE`.
         max_doas (int, optional): Maximum number of Directions of Arrival (DOAs) to consider. Defaults to 2.
         resolution_range (str, optional): Range of angular resolutions to consider:
                                          'standard_resolution', 'fine_resolution', or 'coarse_resolution'.
                                          Defaults to "standard_resolution".
         testing (str, optional): Determines the sample range for testing data.
-                                 If not "default", uses the provided `sample_range`; otherwise, uses `default_sample_range`.
+                                 If not "default", uses the provided `sample_range`; otherwise, uses `DEFAULT_SAMPLE_RANGE`.
                                  Defaults to "default".
 
     Returns:
@@ -358,7 +358,7 @@ def main(
     sample_range_to_test = (
         sample_range
         if testing != "default"
-        else default_sample_range  # Default sample range for testing
+        else DEFAULT_SAMPLE_RANGE  # Default sample range for testing
     )
 
     print("\nGenerating Testing Data...")
@@ -395,4 +395,7 @@ def set_seed(seed: int = 42) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(
+        sample_range=np.array([30000, 50000, 150000]),
+        resolution_range="fine_resolution"
+    )

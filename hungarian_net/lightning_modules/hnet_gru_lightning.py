@@ -29,7 +29,6 @@ class HNetGRULightning(L.LightningModule):
         criterion3 (nn.BCEWithLogitsLoss): Loss function for the third output.
         criterion_wts (List[float]): Weights for combining multiple loss components.
         optimizer (torch.optim.Optimizer): Optimizer for model training.
-        scheduler (torch.optim.lr_scheduler._LRScheduler | None): Learning rate scheduler.
         metrics (MetricCollection): Collection of evaluation metrics.
         confusion_matrix (MulticlassConfusionMatrix): Confusion matrix for multi-class classification.
     """
@@ -42,12 +41,8 @@ class HNetGRULightning(L.LightningModule):
         ),
         max_doas: int = 2,
         optimizer: partial[optim.Optimizer] = partial(optim.Adam),
-        scheduler: partial[optim.lr_scheduler] = None,
     ) -> None:
         super().__init__()
-
-        # Automatically save hyperparameters except for non-serializable objects
-        self.save_hyperparameters(ignore=["metrics", "device", "optimizer"])
 
         self._device = device
         self.model = HNetGRU(max_doas=max_doas).to(self._device)
@@ -59,10 +54,6 @@ class HNetGRULightning(L.LightningModule):
 
         self.optimizer: torch.optim.Optimizer = optimizer(
             params=self.model.parameters()
-        )
-
-        self.scheduler: optim.lr_scheduler = (
-            scheduler(self.optimizer) if scheduler is not None else None
         )
 
         self.metrics: MetricCollection = metrics
@@ -93,7 +84,7 @@ class HNetGRULightning(L.LightningModule):
         data, target = batch
         data = data.to(self._device).float()
 
-        # forward pass
+        # Forward pass
         output = self.model(data)
         l1 = self.criterion1(output[0], target[0])
         l2 = self.criterion2(output[1], target[1])
@@ -236,10 +227,10 @@ class HNetGRULightning(L.LightningModule):
         # Log confusion matrix
         fig_, ax_ = self.confusion_matrix.plot()
 
-        self.logger.experiment.track(
-            Image(fig_),
-            name=f"validation/epoch={self.current_epoch}/confusion_matrix",
-            step=self.global_step,
+        self.logger.experiment.add_figure(
+            f"validation/epoch={self.current_epoch}/confusion_matrix",
+            fig_,
+            global_step=self.global_step,
         )
 
     def on_test_batch_end(
@@ -270,30 +261,19 @@ class HNetGRULightning(L.LightningModule):
         # Log confusion matrix
         fig_, ax_ = self.confusion_matrix.plot()
 
-        self.logger.experiment.track(
-            Image(fig_), name=f"test/confusion_matrix", step=self.global_step
+        self.logger.experiment.add_figure(
+            f"test/confusion_matrix", fig_, global_step=self.global_step
         )
 
     def on_validation_epoch_end(self) -> None:
         """
         Called at the end of the validation epoch.
 
-        Retrieves the aggregated validation loss and steps the scheduler.
+        Retrieves the aggregated validation loss.
         Resets the confusion matrix for the next epoch.
         """
         # Retrieve the validation loss from callback metrics
         val_loss = self.trainer.callback_metrics.get("validation_loss")
-
-        if val_loss is not None and self.scheduler is not None:
-            # Step the scheduler based on the validation loss
-            (
-                self.scheduler.step(val_loss)
-                if type(self.scheduler) is torch.optim.lr_scheduler.ReduceLROnPlateau
-                else self.scheduler.step()
-            )
-
-            # Log the learning rate
-            self.log("learning_rate", self.optimizer.param_groups[0]["lr"])
 
         self.confusion_matrix.reset()
 
@@ -307,16 +287,11 @@ class HNetGRULightning(L.LightningModule):
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """
-        Method to configure optimizers and schedulers. Automatically called by Lightning's Trainer.
+        Method to configure optimizers. Automatically called by Lightning's Trainer.
 
         Returns:
-            Dict[str, Any]: Dictionary containing the optimizer and scheduler configurations.
+            Dict[str, Any]: Dictionary containing the optimizer configuration.
         """
-        if self.scheduler is not None:
-            return {
-                "optimizer": self.optimizer,
-                "lr_scheduler": self.scheduler,
-            }
         return {"optimizer": self.optimizer}
 
     def common_logging(
@@ -342,8 +317,8 @@ class HNetGRULightning(L.LightningModule):
         self.log(f"{stage}_loss", loss, sync_dist=True)
 
         # Log epoch
-        self.logger.experiment.track(
-            self.current_epoch, name="epoch", step=self.global_step
+        self.log("epoch",
+            self.current_epoch, sync_dist=True
         )
 
         preds = torch.sigmoid(output[0]) > 0.5

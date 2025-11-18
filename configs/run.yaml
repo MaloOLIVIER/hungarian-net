@@ -3,13 +3,11 @@
 # Top-level variables available in all config files
 description: "${hydra:runtime.choices.lightning_datamodule}"
 max_doas: 2 # Maximum DoAs to estimate
-num_workers: 4
-batch_size: 256
-nb_epochs: 30
-# train_filename: "${hydra:runtime.cwd}/data/20241205/train/hung_data_train_DOA2_3000-5000-15000"
-# test_filename: "${hydra:runtime.cwd}/data/20241205/test/hung_data_test_DOA2_3000-5000-15000"
-train_filename: "${hydra:runtime.cwd}/data/reference/hung_data_train"
-test_filename: "${hydra:runtime.cwd}/data/reference/hung_data_test"
+num_workers: 0
+batch_size: 128
+nb_epochs: 100
+train_filename: "${hydra:runtime.cwd}/data/reference/hung_data_train.pkl"
+test_filename: "${hydra:runtime.cwd}/data/reference/hung_data_test.pkl"
 sample_range_trained_on: "3000-5000-15000"
 resolution_used: 'standard_resolution'
 
@@ -29,13 +27,11 @@ defaults:
   - callbacks: # Dict of callbacks
       - hnet_checkpoint
       - rich_model_summary
-  - logging: aim
+  - logging: tensorboard
   - metrics: 
     - f1
     - precision
     - recall
   - optimizer: 
     - adam
-  - scheduler:
-    - lr_scheduler
   - _self_ # priority is given to run.yaml for overrides
