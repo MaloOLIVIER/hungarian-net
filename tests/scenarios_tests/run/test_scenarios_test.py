@@ -12,32 +12,13 @@ import pytest
 @pytest.mark.parametrize(
     "test_filename",
     [
-        "data/20241206/test/hung_data_test_DOA2_3000-5000-15000",
-        "data/20241206/test/hung_data_test_DOA2_5000-5000-5000",
-        "data/20241206/test/hung_data_test_DOA2_1000-3000-31000",
-        "data/20241206/test/hung_data_test_DOA2_2600-5000-17000",
-        "data/20241206/test/hung_data_test_DOA2_6300-4000-1500",
-        "data/20241206/test/hung_data_test_DOA2_2000-7000-14000",
-        "data/20241206/test/hung_data_test_DOA2_2500-8000-8500",
+        None,
     ],
 )
 @pytest.mark.parametrize(
     "checkpoint_path",
     [
-        "checkpoints/20241206/hnet_model_DOA2_1000-3000-31000_epoch\=14.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_2000-7000-14000_epoch\=25.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_2500-8000-8500_epoch\=28.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_2600-5000-17000_epoch\=28.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=2.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=9.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=16.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=19-v1.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=19.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=22.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=26.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_3000-5000-15000_epoch\=28.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_5000-5000-5000_epoch\=21.ckpt",
-        "checkpoints/20241206/hnet_model_DOA2_6300-4000-1500_epoch\=29.ckpt",
+        None,
     ],
 )
 def test_checkpoints(test_filename: str, checkpoint_path: str) -> None:

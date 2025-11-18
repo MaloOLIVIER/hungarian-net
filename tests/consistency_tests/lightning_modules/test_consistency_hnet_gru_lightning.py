@@ -16,7 +16,7 @@ def test_hnet_gru_lightning_initialization(
     Test the initialization of HNetGRULightning.
 
     This test verifies that the HNetGRULightning module initializes correctly with the provided
-    metrics, model, loss functions, optimizer, and scheduler.
+    metrics, model, loss functions and optimizer.
 
     Args:
         hnet_gru_lightning (HNetGRULightning): Instance of HNetGRULightning.
@@ -46,9 +46,6 @@ def test_hnet_gru_lightning_initialization(
     assert isinstance(
         hnet_gru_lightning.optimizer, torch.optim.Adam
     ), "Optimizer not initialized correctly."
-    assert (
-        hnet_gru_lightning.scheduler is None
-    ), "Scheduler should be None when not provided."
     assert isinstance(
         hnet_gru_lightning.confusion_matrix, MulticlassConfusionMatrix
     ), "Confusion matrix not initialized correctly."
